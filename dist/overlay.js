@@ -1,4 +1,5 @@
 import { groundHeight } from './terrain.js?v=4';
+import { drawLightning } from './lightning.js?v=10';
 
 const TAU = Math.PI * 2;
 
@@ -9,7 +10,7 @@ export function paintOverlay(g, realTime, lobby) {
       ctx.globalAlpha = Math.min(1, fx.life / fx.maxLife * 1.6);
       if (fx.kind === 'line') {
         const a = this.project(fx.x, groundHeight(fx.x, fx.z) + 1, fx.z), b = this.project(fx.tx, groundHeight(fx.tx, fx.tz) + 1, fx.tz);
-        if (a && b) { ctx.shadowColor = fx.color; ctx.shadowBlur = 12; const mid = { x: (a.x + b.x) / 2 + Math.sin(realTime * 80) * 8, y: (a.y + b.y) / 2 - 12 }; line(a, mid, '#fff4b0', 4); line(mid, b, fx.color, 3); ctx.shadowBlur = 0; }
+        if (a && b) drawLightning(ctx, a, b, fx.color, fx.x * 3 + fx.z * 7 + Math.floor(fx.life * 28));
       } else if (fx.kind === 'ring' || fx.kind === 'burst') {
         ctx.strokeStyle = fx.color; ctx.lineWidth = fx.kind === 'ring' ? 4 : 2; ctx.beginPath();
         const r = fx.radius * (1 - fx.life / fx.maxLife * .4);

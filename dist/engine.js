@@ -1,6 +1,7 @@
 import { ARENA_RADIUS, groundSlope } from './terrain.js?v=10';
 export { ARENA_RADIUS } from './terrain.js?v=10';
 import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=7';
+import { avoidBuildings } from './regions.js?v=10';
 import { LEVELS, levelObjects } from './levels.js?v=10';
 export { LEVELS } from './levels.js?v=10';
 
@@ -216,6 +217,7 @@ export function step(g, input = {}, dt = 1 / 60) {
     }
   }
   if (magnitude && !p.sliding) p.angle = Math.atan2(mx, mz);
+  avoidBuildings(p, .5);
   const worldDistance = Math.hypot(p.x, p.z);
   if (worldDistance > ARENA_RADIUS) { p.x *= ARENA_RADIUS / worldDistance; p.z *= ARENA_RADIUS / worldDistance; }
   p.vy -= 24 * dt; p.y = Math.max(0, p.y + p.vy * dt); if (p.y === 0) p.vy = 0;
@@ -256,6 +258,7 @@ export function step(g, input = {}, dt = 1 / 60) {
     e.angle = Math.atan2(dx, dz);
     const lunge = ['zubat', 'sandslash'].includes(e.kind) && Math.sin(g.time * 1.8 + e.phase) > .85 ? 2.1 : 1;
     if (dist > e.radius + .35) { e.x += dx / dist * e.speed * lunge * dt; e.z += dz / dist * e.speed * lunge * dt; }
+    avoidBuildings(e, e.radius);
     if (dist < e.radius + .55) damagePlayer(g, e.boss ? 22 : e.elite ? 15 : 10);
     if (!e.boss && e.kind === 'geodude' && g.stageTime > 35 && dist < 18) {
       e.attackTimer -= dt;

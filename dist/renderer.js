@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { safeCameraHeight } from './camera-motion.js?v=10';
+import { buildRegion } from './regions.js?v=10';
 import { LEVELS } from './levels.js?v=10';
 import { groundHeight } from './terrain.js?v=4';
 import { buildChest, buildShrine, buildPortal } from './world-props.js?v=4';
@@ -139,6 +140,7 @@ export class Renderer {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.93, .028, 6, 80), this.material('#e3dba9')); ring.rotation.x = Math.PI / 2; ring.position.y = .13;
     this.podium.add(base, top, ring); this.podium.position.set(3.2, .15, 0); this.scene.add(this.podium);
     this.chests = []; this.shrines = [];
+    this.region = buildRegion(THREE, color => this.material(color), groundHeight); this.scene.add(this.region);
     this.portal = buildPortal(THREE); this.scene.add(this.portal.root);
   }
   groundTexture(rng) {
