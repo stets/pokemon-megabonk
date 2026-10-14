@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17221b">
+  <meta name="description" content="Pick a Pokémon. Enter the wild. Survive a three-minute storm of automatic attacks, candy, upgrades, and alpha encounters.">
+  <title>Pokébonk — Wild Run</title>
+  <link rel="stylesheet" href="style.css?v=8">
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+  <script type="module" src="app.js?v=8"></script>
+</head>
+<body>
+  <canvas id="world" tabindex="-1" aria-label="3D Pokémon arena"></canvas>
+  <canvas id="effects" aria-hidden="true"></canvas>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="asset-banner" hidden role="status" aria-live="polite"></div>
+  <div id="look-hint" hidden><button id="capture-mouse">CLICK TO CAPTURE MOUSE</button><span>Keep looking beyond the window edges · Esc releases</span></div>
+  <header id="topbar">
+    <a class="brand" href="./" aria-label="Pokébonk home"><span class="ball-mark" aria-hidden="true"></span>POKÉBONK</a>
+    <div class="top-meta"><span class="live-dot"></span> WILD RUN <span class="divider">/</span> BROWSER PROTOTYPE</div>
+    <button id="sound" class="icon-button" aria-label="Enable sound" title="Toggle sound">SOUND OFF</button>
+  </header>
+
+  <main id="menu">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="tiny-pill">001</span> A VERY DIFFERENT KIND OF WILD ENCOUNTER</div>
+      <h1>Poké<span>bonk</span></h1>
+      <p class="intro">One little Pokémon. An unreasonable amount of trouble.</p>
+      <div class="run-facts"><span><b>03:00</b> TO SURVIVE</span><span><b>∞</b> BAD DECISIONS</span><span><b>4</b> STARTERS</span></div>
+    </div>
+    <div class="specimen"><span id="specimen-type">ELECTRIC / 025</span><strong id="specimen-name">PIKACHU</strong><span>FIELD-READY. PROBABLY.</span></div>
+    <section class="selection" aria-label="Choose a starter">
+      <div class="selection-heading"><h2>CHOOSE YOUR CHAOS</h2><span>01 — 04 <span class="dim">/ SELECT A STARTER</span></span></div>
+      <div id="starters" class="starter-grid"></div>
+      <div class="launch-row"><p><span class="key">W A S D</span> MOVE <span class="key">SPACE</span> JUMP <span class="key">SHIFT</span> DASH<br><span class="dim">Your Pokémon attacks automatically. Move your mouse to look. Hold C to slide down hills.</span><br><span id="asset-status" role="status" aria-live="polite">LOADING THE 3D WORLD…</span></p><button id="start" class="primary" disabled>LOADING POKÉMON… <span>↗</span></button></div>
+    </section>
+    <footer class="menu-footer"><span>A FAN-MADE SURVIVAL EXPERIMENT · INSPIRED BY MEGABONK</span><span id="best">BEST RUN —</span></footer>
+  </main>
+
+  <section id="intro" hidden aria-label="Portal entrance"><div class="cinema-bar cinema-top"></div><div class="cinema-bar cinema-bottom"></div><div class="intro-caption"><span>Beyond the tall grass</span><strong>A wild adventure begins.</strong><button id="skip-intro" class="secondary">SKIP · ESC</button></div></section>
+  <section id="hud" hidden aria-label="Run status">
+    <div class="level-badge" aria-label="Current level"><span class="micro">LEVEL</span><div class="level-diamond"><strong id="level">1</strong></div></div><div class="hud-top"><div class="player-card"><span class="hud-avatar" id="avatar">ϟ</span><div><span class="micro" id="player-type">ELECTRIC</span><strong id="player-name">PIKACHU</strong><div class="health-track"><span id="health-fill"></span></div><span class="health-number" id="health-number">90 / 90 HP</span></div></div>
+      <div class="timer-card"><span class="micro">TIME IN THE WILD</span><strong id="timer">00:00</strong><span id="wave">WAVE 01 / 06</span></div>
+      <div class="run-stats"><div><span class="micro">BONKS</span><strong id="kills">0</strong></div><div><span class="micro">COINS</span><strong id="gold">0</strong></div><button class="icon-button" id="pause" aria-label="Pause game">Ⅱ</button></div></div>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <div id="chest-prompt" hidden></div>
+    <div class="hud-bottom"><div class="moves-block"><span class="micro">YOUR MOVESET</span><div id="moves"></div></div><div class="dash-block"><span class="micro">QUICK ATTACK <span class="key">SHIFT</span></span><div class="dash-track"><span id="dash-fill"></span></div><span id="dash-label">READY</span></div><div class="map-block"><canvas id="minimap" width="110" height="110" aria-label="Arena minimap"></canvas><span class="micro">VIRIDIAN CLEARING</span></div></div>
+    <div class="xp-bottom"><span>XP</span><div class="xp-track"><span id="xp-fill"></span></div><span id="xp-number">0 / 7 XP</span></div>
+    <div id="touch-controls"><div id="joystick" aria-label="Movement joystick"><span></span></div><div class="touch-buttons"><button id="touch-jump">JUMP</button><button id="touch-dash">DASH</button><button id="touch-interact">OPEN</button></div></div>
+  </section>
+
+  <section id="upgrade" class="modal-screen" hidden aria-labelledby="upgrade-title"><div class="modal-panel upgrade-panel"><span class="eyebrow" id="upgrade-eyebrow">A LITTLE STRONGER. A LOT MORE DANGEROUS.</span><h2 id="upgrade-title">LEVEL UP<span>↗</span></h2><p id="upgrade-subtitle">Choose one upgrade. The wild can wait.</p><div id="upgrade-options"></div><p class="modal-footnote">PRESS <span class="key">1</span> <span class="key">2</span> <span class="key">3</span> TO PICK · THE ARENA IS PAUSED</p></div></section>
+  <section id="paused" class="modal-screen" hidden aria-labelledby="pause-title"><div class="modal-panel small-panel"><span class="eyebrow">TAKE A BREATHER</span><h2 id="pause-title">PAUSED.</h2><p>The horde isn't going anywhere.</p><button id="resume" class="primary">BACK TO BONKING <span>↗</span></button><button id="quit" class="secondary">RETURN TO STARTERS</button><p class="modal-footnote">WASD / ARROWS · MOVE<br>SPACE · JUMP &nbsp; SHIFT · DASH<br>E · CHESTS / SHRINES &nbsp; ESC · PAUSE<br>MOUSE · LOOK &nbsp; C · SLIDE DOWNHILL</p></div></section>
+  <section id="result" class="modal-screen" hidden aria-labelledby="result-title"><div class="modal-panel result-panel"><span class="eyebrow" id="result-eyebrow">THE WILD ALWAYS HAS ONE MORE</span><h2 id="result-title">BONKED.</h2><p id="result-description">A good run. A questionable survival strategy.</p><div class="result-grid"><div><span class="micro">TIME</span><strong id="result-time"></strong></div><div><span class="micro">BONKS</span><strong id="result-kills"></strong></div><div><span class="micro">LEVEL</span><strong id="result-level"></strong></div></div><button id="again" class="primary">ONE MORE RUN <span>↗</span></button><button id="change" class="secondary">CHANGE STARTER</button></div></section>
+  <section id="error" class="modal-screen" hidden><div class="modal-panel small-panel"><h2>NO SIGNAL.</h2><p id="error-message"></p><p id="error-help">Check your internet connection and browser hardware acceleration.</p><button class="primary" onclick="location.reload()">TRY AGAIN <span>↗</span></button></div></section>
+  <noscript>This game needs JavaScript and WebGL. Enable JavaScript to play.</noscript>
+</body>
+</html>
