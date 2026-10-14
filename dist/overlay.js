@@ -22,8 +22,9 @@ export function paintOverlay(g, realTime, lobby) {
     if (!lobby) for (const e of g.enemies) {
       if ((!e.boss && e.hp >= e.maxHp) || Math.hypot(e.x - g.player.x, e.z - g.player.z) > 25) continue;
       const pos = this.project(e.x, groundHeight(e.x, e.z) + (e.boss ? 4.4 : 2.2), e.z); if (!pos) continue;
-      const w = e.boss ? 80 : 26; ctx.fillStyle = '#26352bcc'; ctx.fillRect(pos.x - w / 2, pos.y, w, e.boss ? 5 : 3);
-      ctx.fillStyle = e.boss ? '#c998ed' : '#f0a783'; ctx.fillRect(pos.x - w / 2, pos.y, w * Math.max(0, e.hp / e.maxHp), e.boss ? 5 : 3);
+      const w = e.boss ? 150 : e.elite ? 78 : 64, barHeight = e.boss ? 12 : 8;
+      ctx.fillStyle = '#121b22'; ctx.fillRect(pos.x - w / 2 - 2, pos.y - 2, w + 4, barHeight + 4); ctx.fillStyle = '#26352bcc'; ctx.fillRect(pos.x - w / 2, pos.y, w, barHeight);
+      ctx.fillStyle = e.boss ? '#c998ed' : '#f0a783'; ctx.fillRect(pos.x - w / 2, pos.y, w * Math.max(0, e.hp / e.maxHp), barHeight);
     }
     for (const n of g.numbers) {
       const pos = this.project(n.x, groundHeight(n.x, n.z) + 1.6 + (1 - n.life / n.maxLife) * 1.6, n.z); if (!pos) continue;

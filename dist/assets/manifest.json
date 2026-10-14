@@ -1,0 +1,336 @@
+{
+  "three_version": "0.180.0",
+  "models": [
+    "001",
+    "002",
+    "004",
+    "005",
+    "007",
+    "008",
+    "016",
+    "025",
+    "026",
+    "027",
+    "028",
+    "037",
+    "038",
+    "041",
+    "054",
+    "055",
+    "074",
+    "092",
+    "094",
+    "133",
+    "134",
+    "150"
+  ],
+  "reports": {
+    "001": {
+      "bytes": 4436540,
+      "sha256": "655d63cef5edb8606d8aa38c95e32080e687b9a8550dce5cceddbaf769221306",
+      "meshes": 4,
+      "skins": 4,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "002": {
+      "bytes": 6050020,
+      "sha256": "baa7035a03c8d7d221e9205563073b83b89efba0a63b4ec3595674426d93ceee",
+      "meshes": 4,
+      "skins": 4,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "004": {
+      "bytes": 3173596,
+      "sha256": "80330893c87d6b6a64ce6a83c6b620a7736488032c165c39612b7580e62920ed",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "005": {
+      "bytes": 3853812,
+      "sha256": "119252b51825cfd60520dd6a65120938e988c5fe92c098be1a5002118d66d920",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "007": {
+      "bytes": 4546268,
+      "sha256": "aaafb1ac704552e781765fadd8adf3ade1a94587ab1c1a418295579390f944e9",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "008": {
+      "bytes": 4535740,
+      "sha256": "68c1277cf570426484564d7ea0ee55d4ca2bf17323021567ebe9eaed2bff38c0",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "016": {
+      "bytes": 788816,
+      "sha256": "5f7dafc0306e331b571fd3b28f58a83f6823d253348901aa3c03e6073bbecec5",
+      "meshes": 1,
+      "skins": 1,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "025": {
+      "bytes": 7344736,
+      "sha256": "5c9e14325cd7f2d4fcf8b9a6ba3a3bcd0c5947c2fd5b102de24643014a9c758c",
+      "meshes": 5,
+      "skins": 4,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "026": {
+      "bytes": 5769908,
+      "sha256": "7c45392537e65810f9f61378787748e9a26e54724fffc7f8c48d80f15523ca20",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "027": {
+      "bytes": 4915668,
+      "sha256": "240278ae364c713fec48f302455eef074428b01d1f00d17f59f0aa5ad8ae9a49",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "028": {
+      "bytes": 10234480,
+      "sha256": "f60aed75a1ace3daa799885067e52e78d3a63db5e2926d2ab401f7923becc2f2",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "037": {
+      "bytes": 5192852,
+      "sha256": "949a33b6d5ca5c7fc1f6debb43457f64b148b4d81a4759d87cd1583766e0b9b5",
+      "meshes": 7,
+      "skins": 7,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "038": {
+      "bytes": 6202404,
+      "sha256": "f90e246daadf45168884fad084f97d1d59dbe75fd24bf42b43a1a3307c1e5026",
+      "meshes": 9,
+      "skins": 9,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "041": {
+      "bytes": 578276,
+      "sha256": "191b2091975ea5cc7796fc16f1650780da6c479bf94fa0cc149e13ebd2cd0b77",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    "054": {
+      "bytes": 3747856,
+      "sha256": "052ee4ea5f6c013623a6649b2c43ff6fc26960e234d3b8aa160047e3ef6fd70d",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "055": {
+      "bytes": 5127016,
+      "sha256": "900ec2ef7754808bed70a17bee3eea459fa52ebda7208bcd25873ac7b55a8bfc",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "074": {
+      "bytes": 6885560,
+      "sha256": "71a92bcf9c6823cc0c310413a35e37320e52db171d0fd58aa909fd09bd6b5e30",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "092": {
+      "bytes": 1627348,
+      "sha256": "9bc3cd508a6bf01ec83b0e9c94d9ec3da6b9a25482196e603c449050deea6820",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "094": {
+      "bytes": 2562652,
+      "sha256": "c631fdac52a9d91775983a63187b748a0c4e765038bc2f657ffc1a480ee1d557",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "133": {
+      "bytes": 3344216,
+      "sha256": "9760a789048a76192afbf18dd1d5dbc6a780b0267a7ff953396384debaa19bd9",
+      "meshes": 4,
+      "skins": 4,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "134": {
+      "bytes": 4825716,
+      "sha256": "4e4e93c8890fc3f685a9dc931a6eeaf39ab086ac0b039922af5ea53a028a0836",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "150": {
+      "bytes": 3707764,
+      "sha256": "f29ed4c0081a5e600543e3ae35476af596418ca3dbcb6bdf9bbfa73f842542b2",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    }
+  }
+}

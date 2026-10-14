@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGame, step, spawnEnemy, applyUpgrade, makeChoices, STARTERS } from '../dist/engine.js';
+import { createGame, step, spawnEnemy, applyUpgrade, makeChoices, STARTERS, ARENA_RADIUS, LEVELS, advanceStage } from '../dist/engine.js';
 
 function isolated(starter = 'pikachu') { const g = createGame(starter, 123); g.spawnTimer = 1e6; return g; }
 function advance(g, seconds, input = {}) { for (let i = 0; i < Math.ceil(seconds * 60); i++) step(g, input, 1 / 60); }
 
-test('all four starters initialize their signature move and independent stats', () => {
+test('all starters initialize their signature move and independent stats', () => {
   for (const [id, data] of Object.entries(STARTERS)) {
     const g = createGame(id, 1);
     assert.equal(g.moves[0].id, data.move); assert.equal(g.player.hp, data.hp);
@@ -17,7 +17,7 @@ test('diagonal movement has the same speed as straight movement and stays inside
   const straight = isolated(), diagonal = isolated();
   advance(straight, 1, { x: 1 }); advance(diagonal, 1, { x: 1, z: 1 });
   assert.ok(Math.abs(straight.player.x - Math.hypot(diagonal.player.x, diagonal.player.z)) < .001);
-  advance(straight, 12, { x: 1 }); assert.ok(Math.hypot(straight.player.x, straight.player.z) <= 53.001);
+  advance(straight, 30, { x: 1 }); assert.ok(Math.abs(Math.hypot(straight.player.x, straight.player.z) - ARENA_RADIUS) < .001);
 });
 test('enemies pursue the player and automatic attacks respect range', () => {
   const g = isolated(); const far = spawnEnemy(g, 'geodude', { x: 20, z: 0 });
@@ -27,7 +27,7 @@ test('enemies pursue the player and automatic attacks respect range', () => {
 });
 test('all signature moves can damage a stationary nearby enemy', () => {
   for (const id of Object.keys(STARTERS)) {
-    const g = isolated(id); const enemy = spawnEnemy(g, 'gastly', { x: 3, z: 0 }); enemy.speed = 0;
+    const g = isolated(id); const enemy = spawnEnemy(g, STARTERS[id].type === 'GROUND' ? 'geodude' : 'pidgey', { x: 3, z: 0 }); enemy.speed = 0;
     advance(g, 1.3); assert.ok(enemy.hp < enemy.maxHp, `${id} failed to attack`);
   }
 });
@@ -56,9 +56,10 @@ test('chests require coins, consume their cost, and cannot be reopened', () => {
 });
 test('wave escalation and final boss are triggered once, victory requires its defeat', () => {
   const g = isolated(); g.player.hp = 1e9; g.player.maxHp = 1e9;
-  g.time = 149.99; step(g, {}, .02); assert.equal(g.wave, 6); assert.equal(g.enemies.filter(e => e.kind === 'mewtwo').length, 1);
+  g.stage = LEVELS.length - 1; g.duration = LEVELS[g.stage].duration;
+  g.time = g.stageTime = 149.99; step(g, {}, .02); assert.equal(g.wave, 6); assert.equal(g.enemies.filter(e => e.kind === 'mewtwo').length, 1);
   advance(g, .1); assert.equal(g.enemies.filter(e => e.kind === 'mewtwo').length, 1);
-  g.time = 180; step(g); assert.equal(g.status, 'playing');
+  g.time = g.stageTime = g.duration; step(g); assert.equal(g.status, 'playing');
   g.finalBossDead = true; step(g); assert.equal(g.status, 'won');
 });
 test('death freezes simulation and a new run resets progression', () => {
@@ -76,5 +77,14 @@ test('seeded three-minute combat simulation stays finite through repeated upgrad
     step(g, { x: Math.sin(i / 300), z: Math.cos(i / 300), dash: i % 240 === 0 }, 1 / 60);
     assert.ok(Number.isFinite(g.player.x) && Number.isFinite(g.player.hp));
   }
-  assert.ok(g.time >= 180 || g.status === 'won'); assert.ok(g.kills > 0); assert.ok(g.level > 1); assert.ok(g.enemies.length <= 138);
+  assert.ok(g.time >= 180 || g.status === 'won'); assert.ok(g.kills > 0); assert.ok(g.level > 1); assert.ok(g.enemies.length <= 163);
+});
+test('cleared stages advance once and preserve the player build', () => {
+  const g = isolated(); g.stageTime = g.duration; g.finalBossDead = true;
+  step(g); assert.equal(g.status, 'stage-clear');
+  const moves = g.moves; g.player.x = 50;
+  assert.equal(advanceStage(g), true); assert.equal(g.stage, 1);
+  assert.equal(g.status, 'playing'); assert.equal(g.stageTime, 0);
+  assert.equal(g.player.x, 0); assert.equal(g.moves, moves);
+  assert.equal(advanceStage(g), false);
 });

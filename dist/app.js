@@ -1,13 +1,16 @@
-import { createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=8';
-import { easeCamera, turnCamera } from './camera-motion.js?v=4';
+import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=8';
+import { easeCamera, turnCamera } from './camera-motion.js?v=9';
+import { loadSettings, saveSettings } from './settings.js?v=9';
+import { ControllerInput } from './controller.js?v=10';
 import { GameAudio } from './audio.js';
 import { EVOLUTIONS } from './models.js';
 
 const $ = id => document.getElementById(id);
-const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007' };
+const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
 const timeLabel = seconds => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 let selected = 'pikachu', game = createGame(selected), renderer, lobby = true, previousStatus = '', lastHud = 0, choicesKey = '', resultRecorded = false;
 const sound = new GameAudio();
+const controller = new ControllerInput(); let controllerActive = false, controllerMenuIndex = 0;
 let previousTime = 0, held = new Set(), pulse = {}, dragging = false, dragX = 0, dragY = 0, stick = { x: 0, y: 0 };
 let best = null;
 let assetsPaused = false;
@@ -18,12 +21,31 @@ function updateSound() { $('sound').textContent = sound.enabled ? 'SOUND ON' : '
 $('sound').addEventListener('click', () => { sound.toggle(); updateSound(); sound.effect('select'); });
 updateSound();
 
+let cameraSettings;
+try { cameraSettings = loadSettings(localStorage); } catch { cameraSettings = loadSettings(null); }
+function syncCameraSettings() {
+  for (const control of document.querySelectorAll('[data-camera-setting]')) {
+    const key = control.dataset.cameraSetting;
+    if (control.type === 'checkbox') control.checked = cameraSettings[key];
+    else control.value = cameraSettings[key];
+  }
+  for (const output of document.querySelectorAll('[data-sensitivity-value]')) output.textContent = `${cameraSettings.sensitivity.toFixed(2)}×`;
+}
+for (const control of document.querySelectorAll('[data-camera-setting]')) {
+  control.addEventListener('input', () => {
+    cameraSettings[control.dataset.cameraSetting] = control.type === 'checkbox' ? control.checked : Number(control.value);
+    try { saveSettings(localStorage, cameraSettings); } catch {}
+    syncCameraSettings();
+  });
+}
+syncCameraSettings();
+
 function buildStarters() {
   $('starters').replaceChildren();
   for (const [id, data] of Object.entries(STARTERS)) {
     const button = document.createElement('button'); button.className = 'starter' + (selected === id ? ' selected' : ''); button.style.setProperty('--accent', data.color);
     button.setAttribute('aria-pressed', String(selected === id)); button.setAttribute('aria-label', `Choose ${data.name}: ${data.description}`);
-    button.innerHTML = `<span class="starter-top"><span>${digits[id]} / ${data.type}</span><span class="selection-dot"></span></span><img class="starter-portrait" alt="" loading="lazy" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${Number(digits[id])}.png"><span class="starter-name">${data.name}</span><span class="starter-desc">${data.description}</span>`;
+    button.innerHTML = `<span class="starter-top"><span>${digits[id]} / ${data.type}</span><span class="selection-dot"></span></span><img class="starter-portrait" alt="" loading="lazy" src="assets/portraits/${Number(digits[id])}.png"><span class="starter-name">${data.name}</span><span class="starter-desc">${data.description}</span>`;
     button.addEventListener('click', () => selectStarter(id)); $('starters').append(button);
   }
 }
@@ -44,7 +66,7 @@ function updateAssetStatus(event) {
 }
 function clearInput() { dragging = false; held.clear(); pulse = {}; stick = { x: 0, y: 0 }; $('joystick').firstElementChild.style.transform = ''; }
 function captureMouse() {
-  if (!matchMedia('(pointer:fine)').matches || document.pointerLockElement) return;
+  if (controllerActive || !matchMedia('(pointer:fine)').matches || document.pointerLockElement) return;
   try {
     const lock = $('world').requestPointerLock?.();
     lock?.catch(() => { $('look-hint').hidden = false; });
@@ -68,7 +90,7 @@ function startRun() {
   document.body.classList.add('entering'); $('intro').hidden = false; $('hud').hidden = true;
   document.body.classList.add('playing'); $('menu').hidden = true; $('hud').hidden = game.status === 'intro';
   $('look-hint').hidden = !matchMedia('(pointer:fine)').matches;
-  for (const id of ['result', 'paused', 'upgrade']) $(id).hidden = true;
+  for (const id of ['result', 'paused', 'upgrade', 'stage-clear']) $(id).hidden = true;
   buildMoves(); syncHud(); sound.unlock(); sound.effect('portal'); updateSound(); $('world').focus();
   captureMouse();
 }
@@ -78,7 +100,7 @@ function menu() {
   if (document.pointerLockElement) document.exitPointerLock();
   assetsPaused = false; $('asset-banner').hidden = true;
   clearInput(); lobby = true; document.body.classList.remove('playing'); $('menu').hidden = false; $('hud').hidden = true;
-  for (const id of ['result', 'paused', 'upgrade']) $(id).hidden = true;
+  for (const id of ['result', 'paused', 'upgrade', 'stage-clear']) $(id).hidden = true;
   selectStarter(selected); $('start').focus();
 }
 function pause() {
@@ -89,12 +111,16 @@ function pause() {
 $('start').addEventListener('click', startRun); $('again').addEventListener('click', startRun); $('change').addEventListener('click', menu);
 $('pause').addEventListener('click', pause); $('resume').addEventListener('click', pause); $('quit').addEventListener('click', menu);
 
+function moveIcon(id) {
+  return ['thunder','ember','vine','water','rock','shadow'].includes(id) ? `<img class="move-icon" alt="" src="assets/icons/${id}.png">` : MOVES[id].icon;
+}
+
 function buildMoves() {
   $('moves').replaceChildren();
   for (const move of game.moves) {
     const data = MOVES[move.id], el = document.createElement('div'); el.className = 'move'; el.style.setProperty('--accent', data.color);
     el.title = `${data.name} · ${data.type} · level ${move.level}`; el.setAttribute('aria-label', el.title); el.dataset.move = move.id;
-    el.innerHTML = `<span aria-hidden="true">${data.icon}</span><span class="move-level">LV ${move.level}</span><span class="move-charge"></span>`; $('moves').append(el);
+    el.innerHTML = `<span aria-hidden="true">${moveIcon(move.id)}</span><span class="move-level">LV ${move.level}</span><span class="move-charge"></span>`; $('moves').append(el);
   }
 }
 function choose(id) {
@@ -103,14 +129,14 @@ function choose(id) {
 function displayUpgrade() {
   const key = game.choices.map(c => c.id).join(',') + game.level + game.upgradeSource;
   if (key === choicesKey) return;
-  choicesKey = key; clearInput();
+  choicesKey = key; controllerMenuIndex = 0; clearInput();
   $('upgrade-title').innerHTML = game.upgradeSource === 'shrine' ? 'SHRINE BLESSING<span>✦</span>' : game.upgradeSource === 'chest' ? 'LOOT DROP<span>↗</span>' : 'LEVEL UP<span>↗</span>';
   $('upgrade-eyebrow').textContent = game.evolved ? `${STARTERS[game.starter].evolved.toUpperCase()} IS READY FOR MORE` : 'A LITTLE STRONGER. A LOT MORE DANGEROUS.';
   $('upgrade-subtitle').textContent = game.upgradeSource === 'shrine' ? 'The crystal awakens. Choose your blessing.' : game.upgradeSource === 'chest' ? 'Something good was hiding in that chest. Pick one.' : `Level ${game.level}. Choose one upgrade. The wild can wait.`;
   $('upgrade-options').replaceChildren();
   game.choices.forEach((choice, i) => {
     const b = document.createElement('button'); b.className = 'upgrade-option'; b.style.setProperty('--accent', choice.color);
-    b.innerHTML = `<span class="key">${i + 1}</span><span class="micro">${choice.label}</span><span class="upgrade-icon" aria-hidden="true">${choice.icon}</span><strong>${choice.name}</strong><p>${choice.description}</p>${choice.matchup ? `<span class="counter-hint">${choice.matchup}</span>` : ''}`;
+    b.innerHTML = `<span class="key">${i + 1}</span><span class="micro">${choice.label}</span><span class="upgrade-icon" aria-hidden="true">${choice.id.startsWith('move:') ? moveIcon(choice.id.slice(5)) : choice.icon}</span><strong>${choice.name}</strong><p>${choice.description}</p>${choice.matchup ? `<span class="counter-hint">${choice.matchup}</span>` : ''}`;
     b.addEventListener('click', () => choose(choice.id)); $('upgrade-options').append(b);
   });
   $('upgrade').hidden = false; $('upgrade-options').firstElementChild?.focus(); sound.effect('upgrade');
@@ -131,10 +157,10 @@ function showResult() {
   sound.effect(win ? 'win' : 'lose');
 }
 function paintMap() {
-  const ctx = $('minimap').getContext('2d'), p = game.player, center = 55;
-  ctx.clearRect(0, 0, 110, 110); ctx.strokeStyle = '#d4ddc922'; ctx.lineWidth = 1;
-  for (const r of [18, 36, 52]) { ctx.beginPath(); ctx.arc(center, center, r, 0, Math.PI * 2); ctx.stroke(); }
-  const point = (x, z, col, r) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(center + x * .9, center + z * .9, r, 0, Math.PI * 2); ctx.fill(); };
+  const map = $('minimap'), ctx = map.getContext('2d'), p = game.player, center = map.width / 2, scale = (center - 10) / ARENA_RADIUS;
+  ctx.clearRect(0, 0, map.width, map.height); ctx.strokeStyle = '#d4ddc922'; ctx.lineWidth = 1;
+  for (const r of [ARENA_RADIUS * .3 * scale, ARENA_RADIUS * .6 * scale, ARENA_RADIUS * scale]) { ctx.beginPath(); ctx.arc(center, center, r, 0, Math.PI * 2); ctx.stroke(); }
+  const point = (x, z, col, r) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(center + x * scale, center + z * scale, r, 0, Math.PI * 2); ctx.fill(); };
   for (const e of game.enemies) point(e.x, e.z, e.boss ? '#dca4ef' : '#e5967b', e.boss ? 3 : 1.5);
   for (const c of game.chests) if (!c.opened) point(c.x, c.z, '#e4cd85', 2.5);
   for (const shrine of game.shrines) if (!shrine.completed) point(shrine.x, shrine.z, '#bd8cff', 3);
@@ -146,7 +172,7 @@ function syncHud() {
   $('avatar').textContent = MOVES[data.move].icon; $('avatar').style.color = data.color;
   $('health-fill').style.width = `${p.hp / p.maxHp * 100}%`; $('health-fill').style.background = p.hp / p.maxHp < .3 ? '#f0987d' : '#d8ef85';
   $('health-number').textContent = `${Math.ceil(p.hp)} / ${p.maxHp} HP`;
-  $('timer').textContent = timeLabel(game.time); $('wave').textContent = `WAVE ${String(game.wave).padStart(2, '0')} / 06`;
+  $('timer').textContent = timeLabel(game.stageTime); $('wave').textContent = `AREA ${game.stage + 1} / ${LEVELS.length} · WAVE ${game.wave} / 6`;
   $('kills').textContent = String(game.kills); $('gold').textContent = String(game.gold); $('level').textContent = String(game.level);
   $('xp-fill').style.width = `${Math.min(100, game.xp / game.xpNext * 100)}%`; $('xp-number').textContent = `${game.xp} / ${game.xpNext} XP`;
   $('dash-fill').style.width = `${(1 - p.dashCooldown / 2.8) * 100}%`; $('dash-label').textContent = p.dashCooldown > 0 ? `${p.dashCooldown.toFixed(1)}s` : 'READY';
@@ -173,24 +199,30 @@ window.addEventListener('keydown', event => {
   held.add(key);
   if (key === 'escape') { if (game.status === 'intro') finishIntro(); else pause(); }
   if (game.status === 'upgrade' && ['1', '2', '3'].includes(key)) { const choice = game.choices[Number(key) - 1]; if (choice) choose(choice.id); return; }
-  if (lobby && ['1', '2', '3', '4'].includes(key)) selectStarter(Object.keys(STARTERS)[Number(key) - 1]);
+  if (lobby && ['1', '2', '3', '4', '5', '6', '7', '8'].includes(key)) selectStarter(Object.keys(STARTERS)[Number(key) - 1]);
   if (!lobby && game.status === 'playing') { if (key === 'shift') pulse.dash = true; if (key === ' ') pulse.jump = true; if (key === 'e') pulse.interact = true; }
 });
 window.addEventListener('keyup', event => held.delete(event.key.toLowerCase()));
 window.addEventListener('blur', () => { clearInput(); if (game.status === 'playing' && !lobby) pause(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { clearInput(); if (game.status === 'playing' && !lobby) pause(); } });
 $('world').addEventListener('pointerdown', event => {
-  if (lobby || game.status !== 'playing') return;
+  if (lobby) { dragging = true; dragX = event.clientX; dragY = event.clientY; $('world').setPointerCapture(event.pointerId); return; }
+  if (game.status !== 'playing') return;
   if (event.pointerType === 'mouse') { captureMouse(); $('world').focus(); return; }
   dragging = true; dragX = event.clientX; dragY = event.clientY; $('world').setPointerCapture(event.pointerId);
 });
 document.addEventListener('pointermove', event => {
-  if (!renderer || lobby || game.status !== 'playing') return;
+  if (!renderer) return;
+  if (lobby) {
+    if (dragging) turnCamera(renderer.previewCamera, event.clientX - dragX, event.clientY - dragY, cameraSettings);
+    dragX = event.clientX; dragY = event.clientY; return;
+  }
+  if (game.status !== 'playing') return;
   const locked = document.pointerLockElement === $('world');
   if (locked || (event.target === $('world') && event.pointerType === 'mouse')) {
-    turnCamera(renderer, event.movementX || 0, event.movementY || 0);
+    turnCamera(renderer, event.movementX || 0, event.movementY || 0, cameraSettings);
   } else if (dragging) {
-    turnCamera(renderer, event.clientX - dragX, event.clientY - dragY);
+    turnCamera(renderer, event.clientX - dragX, event.clientY - dragY, cameraSettings);
   }
   dragX = event.clientX; dragY = event.clientY;
 });
@@ -206,6 +238,14 @@ function moveStick(event) {
 for (const event of ['pointerup', 'pointercancel']) $('joystick').addEventListener(event, () => { stick = { x: 0, y: 0 }; $('joystick').firstElementChild.style.transform = ''; });
 for (const action of ['jump', 'dash', 'interact']) $('touch-' + action).addEventListener('pointerdown', event => { event.preventDefault(); pulse[action] = true; });
 
+function enterNextArea() {
+  if (!advanceStage(game)) return;
+  $('stage-clear').hidden = true; renderer.camera = { x: 0, z: 0 }; renderer.cameraHeight = 0;
+  game.status = 'intro'; game.introTime = 0; document.body.classList.add('entering'); $('intro').hidden = false; $('hud').hidden = true;
+  clearInput(); captureMouse(); sound.effect('portal'); syncHud();
+}
+$('next-stage').addEventListener('click', enterNextArea);
+
 function finishIntro() {
   if (game.status !== 'intro') return;
   game.status = 'playing'; clearInput();
@@ -214,9 +254,56 @@ function finishIntro() {
 }
 $('skip-intro').addEventListener('click', finishIntro);
 
+function handleController(pad, dt) {
+  if (controllerActive && !pad.connected && game.status === 'playing') pause();
+  controllerActive = pad.connected;
+  $('controller-status').textContent = pad.connected ? 'CONTROLLER READY · A: CONFIRM · B: BACK · MENU: PAUSE' : 'CONTROLLER · PRESS A TO CONNECT';
+  if (!pad.connected) return;
+  $('look-hint').hidden = true;
+  if (pad.pressed.has(9)) { if (game.status === 'intro') finishIntro(); else pause(); }
+  if (lobby) {
+    const roster = Object.keys(STARTERS), direction = pad.navX || pad.navY || (pad.pressed.has(4) ? -1 : pad.pressed.has(5) ? 1 : 0);
+    if (direction) selectStarter(roster[(roster.indexOf(selected) + direction + roster.length) % roster.length]);
+    turnCamera(renderer.previewCamera, pad.look.x * dt * 450, pad.look.y * dt * 350, cameraSettings);
+    if (pad.pressed.has(0)) startRun();
+    return;
+  }
+  if (game.status === 'intro') { if (pad.pressed.has(0)) finishIntro(); return; }
+  if (game.status === 'playing') {
+    turnCamera(renderer, pad.look.x * dt * 450, pad.look.y * dt * 350, cameraSettings);
+    if (pad.pressed.has(0)) pulse.jump = true;
+    if (pad.pressed.has(1)) pulse.dash = true;
+    if (pad.pressed.has(2)) pulse.interact = true;
+    return;
+  }
+  if (game.status === 'upgrade') {
+    if (pad.navX || pad.navY) controllerMenuIndex = (controllerMenuIndex + (pad.navX || pad.navY) + game.choices.length) % game.choices.length;
+    [...$('upgrade-options').children].forEach((button, i) => button.classList.toggle('controller-focus', i === controllerMenuIndex % game.choices.length));
+    if (pad.pressed.has(0)) choose(game.choices[controllerMenuIndex % game.choices.length].id);
+    return;
+  }
+  if (game.status === 'stage-clear') { if (pad.pressed.has(0)) enterNextArea(); return; }
+  if (game.status === 'paused') {
+    if (pad.pressed.has(1)) { pause(); return; }
+    const elements = [...$('paused').querySelectorAll('input, button')];
+    let index = elements.indexOf(document.activeElement); if (index < 0) index = 0;
+    if (pad.navY) elements[(index + pad.navY + elements.length) % elements.length].focus();
+    const focused = document.activeElement;
+    if (pad.navX && focused?.type === 'range') {
+      focused.value = Math.max(Number(focused.min), Math.min(Number(focused.max), Number(focused.value) + pad.navX * .05)); focused.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (pad.pressed.has(0) && focused) focused.click();
+    return;
+  }
+  if (['dead', 'won'].includes(game.status) && pad.pressed.has(0)) startRun();
+}
+
 function advanceFrame(time) {
   const dt = Math.min((time - previousTime) / 1000 || .016, .05); previousTime = time;
-  if (renderer) easeCamera(renderer, dt);
+  let pad;
+  try { pad = controller.poll(navigator.getGamepads?.() ?? [], time / 1000); } catch { pad = controller.poll([], time / 1000); }
+  if (renderer && document.hasFocus() && !document.hidden) handleController(pad, dt);
+  if (renderer) { easeCamera(renderer, dt); easeCamera(renderer.previewCamera, dt); }
   if (!lobby) {
     if (game.status === 'intro' && !document.hidden && document.hasFocus()) {
       game.introTime += dt;
@@ -232,10 +319,10 @@ function advanceFrame(time) {
       if (!missing.length) { game.status = 'playing'; assetsPaused = false; $('asset-banner').hidden = true; }
       else { $('asset-banner').hidden = false; $('asset-banner').textContent = 'PREPARING THE NEXT ENCOUNTER…'; }
     }
-    const horizontal = (held.has('d') || held.has('arrowright') ? 1 : 0) - (held.has('a') || held.has('arrowleft') ? 1 : 0) + stick.x;
-    const vertical = (held.has('s') || held.has('arrowdown') ? 1 : 0) - (held.has('w') || held.has('arrowup') ? 1 : 0) + stick.y;
+    const horizontal = (held.has('d') || held.has('arrowright') ? 1 : 0) - (held.has('a') || held.has('arrowleft') ? 1 : 0) + stick.x + (pad.connected ? pad.move.x : 0);
+    const vertical = (held.has('s') || held.has('arrowdown') ? 1 : 0) - (held.has('w') || held.has('arrowup') ? 1 : 0) + stick.y + (pad.connected ? pad.move.y : 0);
     const c = Math.cos(renderer.yaw), s = Math.sin(renderer.yaw);
-    const input = { slide: held.has('c'), x: horizontal * c + vertical * s, z: -horizontal * s + vertical * c, ...pulse }; pulse = {};
+    const input = { slide: held.has('c') || pad.held.has(6) || pad.held.has(10), x: horizontal * c + vertical * s, z: -horizontal * s + vertical * c, ...pulse }; pulse = {};
     const killsBefore = game.kills, hpBefore = game.player.hp, xpBefore = game.xp, evolvedBefore = game.evolved;
     if (game.status === 'playing') { if (input.dash && game.player.dashCooldown === 0) sound.effect('dash'); if (input.jump && game.player.y === 0) sound.effect('jump'); }
     step(game, input, dt);
@@ -244,10 +331,14 @@ function advanceFrame(time) {
     if (game.xp > xpBefore) sound.effect('candy');
     if (game.evolved && !evolvedBefore) sound.effect('evolve');
     if (game.status === 'upgrade') displayUpgrade();
+    if (game.status === 'stage-clear') {
+      $('stage-clear').hidden = false; $('cleared-area').textContent = LEVELS[game.stage].name;
+      $('next-area').textContent = `${LEVELS[game.stage + 1].name} · keep your moves and upgrades`;
+    }
     if (game.status === 'dead' || game.status === 'won') showResult();
     if (time - lastHud > 90 || previousStatus !== game.status) { syncHud(); lastHud = time; previousStatus = game.status; }
   }
-  sound.tick(lobby ? 'lobby' : game.status, game.wave / 6);
+  sound.tick(lobby ? 'lobby' : game.status, Math.min(1, (game.stage + game.stageTime / game.duration) / LEVELS.length));
   renderer.render(game, time / 1000, lobby);
 }
 function frame(time) {

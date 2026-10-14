@@ -1,3 +1,7 @@
+export function musicBpm(status, progress = 0) {
+  return status === 'lobby' ? 104 : 118 + 60 * Math.max(0, Math.min(1, progress));
+}
+
 // Original music and effects synthesized locally with Web Audio.
 const midi = note => 440 * 2 ** ((note - 69) / 12);
 export class GameAudio {
@@ -62,7 +66,7 @@ export class GameAudio {
     const ctx = this.context;
     this.music.gain.setTargetAtTime(status === 'playing' ? .16 : status === 'lobby' ? .09 : .035, ctx.currentTime, .3);
     if (this.nextBeat < ctx.currentTime) this.nextBeat = ctx.currentTime + .02;
-    const stepDuration = 60 / (110 + intensity * 12) / 4;
+    const stepDuration = 60 / musicBpm(status, intensity) / 4;
     const melody = [72, 76, 79, 76, 74, 0, 72, 67, 69, 72, 76, 72, 67, 0, 69, 71, 72, 0, 79, 81, 79, 76, 74, 0, 72, 69, 67, 69, 71, 74, 76, 0];
     const roots = [48, 45, 53, 55];
     while (this.nextBeat < ctx.currentTime + .12) {

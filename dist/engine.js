@@ -1,11 +1,18 @@
-import { groundSlope } from './terrain.js?v=4';
+import { ARENA_RADIUS, groundSlope } from './terrain.js?v=10';
+export { ARENA_RADIUS } from './terrain.js?v=10';
 import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=7';
+import { LEVELS, levelObjects } from './levels.js?v=10';
+export { LEVELS } from './levels.js?v=10';
 
 export const STARTERS = {
   pikachu: { name: 'Pikachu', evolved: 'Raichu', type: 'ELECTRIC', color: '#ffda4a', move: 'thunder', speed: 8.2, hp: 90, description: 'Chain lightning. Fast feet. Absolute chaos.' },
   charmander: { name: 'Charmander', evolved: 'Charmeleon', type: 'FIRE', color: '#ff9361', move: 'ember', speed: 7.4, hp: 105, description: 'Piercing fireballs. Make the forest feel the heat.' },
   bulbasaur: { name: 'Bulbasaur', evolved: 'Ivysaur', type: 'GRASS', color: '#97db83', move: 'vine', speed: 6.9, hp: 120, description: 'Wide vine sweeps. A little tank with a big bulb.' },
   squirtle: { name: 'Squirtle', evolved: 'Wartortle', type: 'WATER', color: '#74cbea', move: 'water', speed: 7.5, hp: 105, description: 'Rapid water shots. Keep the horde at a distance.' },
+  eevee: { name: 'Eevee', evolved: 'Vaporeon', type: 'NORMAL', color: '#d6b48a', move: 'swift', speed: 8.6, hp: 95, description: 'Piercing stars. Quick on its paws, dangerous at range.' },
+  vulpix: { name: 'Vulpix', evolved: 'Ninetales', type: 'FIRE', color: '#efa477', move: 'ember', speed: 8.3, hp: 90, description: 'Fast fire volleys. Six tails, zero hesitation.' },
+  psyduck: { name: 'Psyduck', evolved: 'Golduck', type: 'WATER', color: '#f0d16c', move: 'psychic', speed: 7.1, hp: 120, description: 'Psychic bursts. The headache is everybody else’s problem.' },
+  sandshrew: { name: 'Sandshrew', evolved: 'Sandslash', type: 'GROUND', color: '#dfbe6c', move: 'sand', speed: 7.6, hp: 115, description: 'Sand pulses. Armored paws and a ground-shaking attitude.' },
 };
 export const MOVES = {
   thunder: { name: 'Thunder Shock', type: 'ELECTRIC', color: '#ffdc50', cooldown: .95, damage: 24, range: 14, icon: 'ϟ' },
@@ -14,6 +21,9 @@ export const MOVES = {
   water: { name: 'Water Gun', type: 'WATER', color: '#80d9f6', cooldown: .48, damage: 15, range: 17, icon: '≈' },
   rock: { name: 'Rock Throw', type: 'ROCK', color: '#d3bc83', cooldown: 1.1, damage: 34, range: 15, speed: 14, icon: '⬟' },
   shadow: { name: 'Shadow Ball', type: 'GHOST', color: '#c29af4', cooldown: 1.05, damage: 30, range: 16, speed: 17, icon: '◉' },
+  swift: { name: 'Swift', type: 'NORMAL', color: '#ffe1a0', cooldown: .65, damage: 20, range: 18, speed: 24, icon: '★' },
+  psychic: { name: 'Confusion', type: 'PSYCHIC', color: '#f5a3e1', cooldown: 1.15, damage: 29, range: 7.5, icon: '◎' },
+  sand: { name: 'Sand Tomb', type: 'GROUND', color: '#dfbe6c', cooldown: 1.3, damage: 31, range: 6.5, icon: '◌' },
 };
 export function seededRandom(seed = 4721) {
   return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t ^= t + Math.imul(t ^ t >>> 7, 61 | t); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -23,24 +33,24 @@ export function createGame(starter = 'pikachu', seed = Date.now()) {
   const config = STARTERS[starter];
   if (!config) throw new Error('Unknown starter');
   const rng = seededRandom(seed);
-  return { status: 'playing', starter, rng, time: 0, duration: 180, wave: 1, kills: 0, gold: 0, xp: 0, xpNext: 7, level: 1,
+  return { status: 'playing', starter, rng, time: 0, stage: 0, stageTime: 0, duration: LEVELS[0].duration, wave: 1, kills: 0, gold: 0, xp: 0, xpNext: 7, level: 1,
     player: { types: [...SPECIES_TYPES[starter]], x: 0, z: 0, y: 0, vy: 0, slideX: 0, slideZ: 0, sliding: false, angle: 0, hp: config.hp, maxHp: config.hp, speed: config.speed, invulnerable: 0, dash: 0, dashCooldown: 0, dashX: 0, dashZ: -1 },
     stats: { damage: 1, haste: 1, magnet: 3.8, armor: 0, projectiles: 1 },
     moves: [{ id: config.move, level: 1, cooldown: .3 }], enemies: [], bullets: [], drops: [], fx: [], numbers: [], nextId: 1,
     spawnTimer: .2, bossStages: [], finalBossDead: false, evolved: false, choices: [], upgradeSource: 'level',
-    chests: [{ x: -10, z: -12, opened: false }, { x: 15, z: 6, opened: false }, { x: -18, z: 18, opened: false }],
-    shrines: [{ x: -23, z: -18, charge: 0, active: false, completed: false }, { x: 18, z: 22, charge: 0, active: false, completed: false }, { x: 8, z: -35, charge: 0, active: false, completed: false }],
+    ...levelObjects(0),
     notice: 'SURVIVE THE WILD', noticeTime: 3, events: [] };
 }
 function event(g, name) { g.events.push(name); if (g.events.length > 12) g.events.shift(); }
 function notice(g, message, duration = 2.7) { g.notice = message; g.noticeTime = duration; }
 export function spawnEnemy(g, kind, position, elite = false) {
   const angle = g.rng() * Math.PI * 2, radius = 20 + g.rng() * 7;
-  const type = kind ?? (g.time < 25 ? (g.rng() < .6 ? 'gastly' : 'geodude') : ['gastly', 'geodude', 'zubat', 'pidgey'][Math.floor(g.rng() * 4)]);
-  const defaults = { gastly: [32, 2.7, .65], geodude: [60, 1.8, .85], zubat: [23, 4.2, .58], pidgey: [36, 3.3, .64], gengar: [650, 2.1, 1.65], mewtwo: [1800, 2.5, 1.8] }[type];
-  const scale = 1 + g.time / 150;
+  const roster = g.stage === 0 && g.stageTime < 20 ? ['gastly', 'geodude'] : LEVELS[g.stage].enemies;
+  const type = kind ?? roster[Math.floor(g.rng() * roster.length)];
+  const defaults = { gastly: [42, 3.4, .65], geodude: [76, 2.2, .85], zubat: [30, 4.8, .58], pidgey: [44, 3.9, .64], gengar: [1000, 2.8, 1.65], mewtwo: [2400, 3.3, 1.8], sandshrew: [58, 3.8, .65], sandslash: [95, 4.1, .85] }[type];
+  const scale = 1 + g.stage * .75 + g.stageTime / 180;
   const e = { id: g.nextId++, kind: type, types: [...SPECIES_TYPES[type]], x: position?.x ?? g.player.x + Math.cos(angle) * radius, z: position?.z ?? g.player.z + Math.sin(angle) * radius,
-    hp: defaults[0] * scale * (elite ? 1.8 : 1), maxHp: defaults[0] * scale * (elite ? 1.8 : 1), speed: defaults[1] * (elite ? 1.15 : 1), radius: defaults[2],
+    hp: defaults[0] * scale * (elite ? 1.8 : 1), maxHp: defaults[0] * scale * (elite ? 1.8 : 1), speed: defaults[1] * (1 + g.stage * .12) * (elite ? 1.15 : 1), radius: defaults[2],
     elite, boss: ['gengar', 'mewtwo'].includes(type), hit: 0, attackTimer: 2.5, angle: angle + Math.PI, phase: g.rng() * 8 };
   g.enemies.push(e); return e;
 }
@@ -59,7 +69,7 @@ function hit(g, e, damage, color, attackType) {
     g.drops.push({ x: e.x, z: e.z, kind: 'xp', value, phase: g.rng() * 6 });
     if (g.rng() < .065 || e.boss) g.drops.push({ x: e.x + .5, z: e.z, kind: 'berry', value: 20, phase: 0 });
     g.fx.push({ kind: 'burst', x: e.x, z: e.z, color, radius: e.radius * 1.4, life: .3, maxLife: .3 });
-    if (e.kind === 'mewtwo') { g.finalBossDead = true; notice(g, 'MEWTWO DEFEATED', 4); }
+    if (e.id === g.stageBossId) { g.finalBossDead = true; notice(g, `${e.kind.toUpperCase()} DEFEATED · CLEAR THE AREA`, 4); }
     event(g, 'enemy-killed');
   }
 }
@@ -69,7 +79,7 @@ function attack(g, move) {
   const targets = g.enemies.filter(e => e.hp > 0 && distance(e, p) < range).sort((a, b) => effectiveness(data.type, b.types) - effectiveness(data.type, a.types) || distance(a, p) - distance(b, p));
   if (!targets.length) return false;
   const damage = data.damage * g.stats.damage * (1 + (move.level - 1) * .32) * (g.evolved ? 1.25 : 1);
-  if (move.id === 'vine') {
+  if (['vine', 'psychic', 'sand'].includes(move.id)) {
     for (const e of targets) hit(g, e, damage, data.color, data.type);
     g.fx.push({ kind: 'ring', x: p.x, z: p.z, radius: range, color: data.color, life: .35, maxLife: .35 });
   } else if (move.id === 'thunder') {
@@ -84,7 +94,7 @@ function attack(g, move) {
       const a = angle + (n - (Math.min(5, g.stats.projectiles) - 1) / 2) * .18;
       const speed = data.speed ?? 21;
       g.bullets.push({ x: p.x, z: p.z, vx: Math.sin(a) * speed, vz: Math.cos(a) * speed, life: range / speed, radius: move.id === 'rock' ? .48 : .36,
-        type: data.type, color: data.color, damage, pierce: move.id === 'ember' ? 2 + Math.floor(move.level / 3) : 1, hitIds: new Set(), enemy: false });
+        type: data.type, color: data.color, damage, pierce: ['ember', 'swift'].includes(move.id) ? 2 + Math.floor(move.level / 3) : 1, hitIds: new Set(), enemy: false });
     }
   }
   event(g, 'attack'); return true;
@@ -164,7 +174,7 @@ function damagePlayer(g, amount, attackType) {
   if (p.invulnerable > 0 || p.dash > 0 || p.y > 1.3) return;
   const multiplier = attackType ? effectiveness(attackType, p.types) : 1;
   if (multiplier === 0) return;
-  p.hp = Math.max(0, p.hp - amount * multiplier * (1 - g.stats.armor)); p.invulnerable = .7;
+  p.hp = Math.max(0, p.hp - amount * multiplier * (1 + g.stage * .25) * (1 - g.stats.armor)); p.invulnerable = .6;
   g.fx.push({ kind: 'hurt', x: p.x, z: p.z, color: '#ff7269', life: .35, maxLife: .35 }); event(g, 'player-hit');
   if (p.hp <= 0) { g.status = 'dead'; event(g, 'game-over'); }
 }
@@ -177,7 +187,7 @@ export function step(g, input = {}, dt = 1 / 60) {
   if (g.status !== 'playing') return;
   dt = Math.max(0, Math.min(dt, .05));
   const p = g.player;
-  g.time += dt; g.wave = Math.min(6, 1 + Math.floor(g.time / 30));
+  g.time += dt; g.stageTime += dt; g.wave = Math.min(6, 1 + Math.floor(g.stageTime / 30));
   g.noticeTime = Math.max(0, g.noticeTime - dt);
   p.invulnerable = Math.max(0, p.invulnerable - dt); p.dashCooldown = Math.max(0, p.dashCooldown - dt);
   let mx = input.x ?? 0, mz = input.z ?? 0; const magnitude = Math.hypot(mx, mz);
@@ -207,13 +217,16 @@ export function step(g, input = {}, dt = 1 / 60) {
   }
   if (magnitude && !p.sliding) p.angle = Math.atan2(mx, mz);
   const worldDistance = Math.hypot(p.x, p.z);
-  if (worldDistance > 53) { p.x *= 53 / worldDistance; p.z *= 53 / worldDistance; }
+  if (worldDistance > ARENA_RADIUS) { p.x *= ARENA_RADIUS / worldDistance; p.z *= ARENA_RADIUS / worldDistance; }
   p.vy -= 24 * dt; p.y = Math.max(0, p.y + p.vy * dt); if (p.y === 0) p.vy = 0;
   if (input.interact) {
     const chest = g.chests.find(c => !c.opened && distance(c, p) < 3);
     if (chest && g.gold >= 15) { chest.opened = true; g.gold -= 15; g.upgradeSource = 'chest'; makeChoices(g); event(g, 'chest-opened'); return; }
     const shrine = g.shrines.find(s => !s.completed && !s.active && distance(s, p) < 3);
-    if (shrine) { shrine.active = true; notice(g, 'HOLD THE SHRINE · STAY IN THE RING'); event(g, 'shrine-started'); }
+    if (shrine) {
+      shrine.active = true; notice(g, 'HOLD THE SHRINE · STAY IN THE RING'); event(g, 'shrine-started');
+      for (let n = 0; n < 4; n++) { const a = n * Math.PI / 2; spawnEnemy(g, undefined, { x: shrine.x + Math.cos(a) * 9, z: shrine.z + Math.sin(a) * 9 }); }
+    }
   }
   for (const shrine of g.shrines) {
     if (!shrine.active || shrine.completed || distance(shrine, p) > 4.5) continue;
@@ -224,14 +237,16 @@ export function step(g, input = {}, dt = 1 / 60) {
     }
   }
   g.spawnTimer -= dt;
-  if (g.spawnTimer <= 0 && g.enemies.length < 135) {
-    spawnEnemy(g, undefined, undefined, g.time > 35 && g.rng() < .07);
-    g.spawnTimer = Math.max(.12, .8 - g.time * .0035);
+  if (g.spawnTimer <= 0 && g.enemies.length < 160) {
+    spawnEnemy(g, undefined, undefined, g.stageTime > 30 && g.rng() < .08 + g.stage * .05);
+    g.spawnTimer = Math.max(.1, .52 - g.stageTime * .0023 - g.stage * .08);
   }
   for (const time of [60, 120, 150]) {
-    if (g.time >= time && !g.bossStages.includes(time)) {
-      g.bossStages.push(time); spawnEnemy(g, time === 150 ? 'mewtwo' : 'gengar');
-      notice(g, time === 150 ? 'MEWTWO HAS ENTERED THE WILD' : 'AN ALPHA GENGAR APPROACHES', 4); event(g, 'boss-spawned');
+    if (g.stageTime >= time && !g.bossStages.includes(time)) {
+      const kind = time === 150 ? LEVELS[g.stage].boss : 'gengar';
+      g.bossStages.push(time); const boss = spawnEnemy(g, kind);
+      if (time === 150) g.stageBossId = boss.id;
+      notice(g, `${kind.toUpperCase()} HAS ENTERED ${LEVELS[g.stage].name.toUpperCase()}`, 4); event(g, 'boss-spawned');
     }
   }
   for (const e of g.enemies) {
@@ -239,16 +254,25 @@ export function step(g, input = {}, dt = 1 / 60) {
     e.hit = Math.max(0, e.hit - dt);
     const dx = p.x - e.x, dz = p.z - e.z, dist = Math.hypot(dx, dz) || 1;
     e.angle = Math.atan2(dx, dz);
-    if (dist > e.radius + .35) { e.x += dx / dist * e.speed * dt; e.z += dz / dist * e.speed * dt; }
+    const lunge = ['zubat', 'sandslash'].includes(e.kind) && Math.sin(g.time * 1.8 + e.phase) > .85 ? 2.1 : 1;
+    if (dist > e.radius + .35) { e.x += dx / dist * e.speed * lunge * dt; e.z += dz / dist * e.speed * lunge * dt; }
     if (dist < e.radius + .55) damagePlayer(g, e.boss ? 22 : e.elite ? 15 : 10);
+    if (!e.boss && e.kind === 'geodude' && g.stageTime > 35 && dist < 18) {
+      e.attackTimer -= dt;
+      if (e.attackTimer <= 0) {
+        g.bullets.push({ x: e.x, z: e.z, vx: dx / dist * 7, vz: dz / dist * 7, radius: .36, life: 3, type: 'ROCK', color: '#d3bc83', damage: 12, enemy: true });
+        e.attackTimer = 4;
+      }
+    }
     if (e.boss) {
       e.attackTimer -= dt;
       if (e.attackTimer <= 0) {
-        for (let n = 0; n < 8; n++) {
-          const a = n * Math.PI / 4 + g.time * .5;
-          g.bullets.push({ x: e.x, z: e.z, vx: Math.sin(a) * 6, vz: Math.cos(a) * 6, radius: .45, life: 3, type: e.kind === 'mewtwo' ? 'PSYCHIC' : 'GHOST', color: '#d999ff', damage: 14, enemy: true });
+        const shots = 10 + g.stage * 2, speed = 7 + g.stage;
+        for (let n = 0; n < shots; n++) {
+          const a = n * Math.PI * 2 / shots + g.time * .5;
+          g.bullets.push({ x: e.x, z: e.z, vx: Math.sin(a) * speed, vz: Math.cos(a) * speed, radius: .45, life: 3, type: e.kind === 'mewtwo' ? 'PSYCHIC' : 'GHOST', color: '#d999ff', damage: 16, enemy: true });
         }
-        e.attackTimer = 3.2;
+        e.attackTimer = 2.8 - g.stage * .3;
       }
     }
   }
@@ -293,6 +317,17 @@ export function step(g, input = {}, dt = 1 / 60) {
   for (const n of g.numbers) n.life -= dt;
   g.fx = g.fx.filter(f => f.life > 0); g.numbers = g.numbers.filter(n => n.life > 0);
   if (g.status !== 'playing') return;
-  if (g.time >= g.duration && g.finalBossDead) { g.status = 'won'; event(g, 'victory'); return; }
+  if (g.stageTime >= g.duration && g.finalBossDead) { g.status = g.stage === LEVELS.length - 1 ? 'won' : 'stage-clear'; event(g, g.status === 'won' ? 'victory' : 'stage-clear'); return; }
   checkLevel(g);
+}
+
+export function advanceStage(g) {
+  if (g.status !== 'stage-clear' || g.stage >= LEVELS.length - 1) return false;
+  g.stage++; g.stageTime = 0; g.duration = LEVELS[g.stage].duration;
+  g.enemies = []; g.bullets = []; g.fx = []; g.numbers = []; g.drops = [];
+  g.bossStages = []; g.finalBossDead = false; g.stageBossId = null; g.spawnTimer = .4; g.wave = 1;
+  Object.assign(g, levelObjects(g.stage));
+  Object.assign(g.player, { x: 0, z: 0, y: 0, vy: 0, slideX: 0, slideZ: 0, sliding: false, dash: 0, invulnerable: 1.5, hp: Math.min(g.player.maxHp, g.player.hp + g.player.maxHp * .35) });
+  g.status = 'playing'; notice(g, LEVELS[g.stage].name.toUpperCase(), 4);
+  return true;
 }

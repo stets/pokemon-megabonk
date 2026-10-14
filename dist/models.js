@@ -16,8 +16,16 @@ export const MODELS = {
   pidgey: { id: '016', height: 1.4, faceYaw: 0 },
   gengar: { id: '094', height: 2.8, faceYaw: 0 },
   mewtwo: { id: '150', height: 4.0, faceYaw: 0 },
+  eevee: { id: '133', height: 1.3, faceYaw: 0 },
+  vaporeon: { id: '134', height: 2.1, faceYaw: 0 },
+  vulpix: { id: '037', height: 1.5, faceYaw: 0 },
+  ninetales: { id: '038', height: 2.7, faceYaw: 0 },
+  psyduck: { id: '054', height: 1.8, faceYaw: 0 },
+  golduck: { id: '055', height: 2.7, faceYaw: 0 },
+  sandshrew: { id: '027', height: 1.5, faceYaw: 0 },
+  sandslash: { id: '028', height: 2.3, faceYaw: 0 },
 };
-export const EVOLUTIONS = { pikachu: 'raichu', charmander: 'charmeleon', bulbasaur: 'ivysaur', squirtle: 'wartortle' };
+export const EVOLUTIONS = { pikachu: 'raichu', charmander: 'charmeleon', bulbasaur: 'ivysaur', squirtle: 'wartortle', eevee: 'vaporeon', vulpix: 'ninetales', psyduck: 'golduck', sandshrew: 'sandslash' };
 export function modelURL(kind, local = false) {
   const data = MODELS[kind];
   if (!data) throw new Error(`No model configured for ${kind}`);

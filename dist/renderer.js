@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { safeCameraHeight } from './camera-motion.js?v=10';
+import { LEVELS } from './levels.js?v=10';
 import { groundHeight } from './terrain.js?v=4';
 import { buildChest, buildShrine, buildPortal } from './world-props.js?v=4';
 import { MODELS, EVOLUTIONS, modelURL } from './models.js';
@@ -17,7 +19,7 @@ const _dummy = new THREE.Object3D();
 export class Renderer {
   constructor(canvas, overlay, onAssetStatus = () => {}) {
     this.canvas = canvas; this.overlay = overlay; this.ctx = overlay.getContext('2d');
-    this.onAssetStatus = onAssetStatus; this.yaw = this.targetYaw = -.35; this.pitch = this.targetPitch = .53; this.cameraHeight = 0;
+    this.onAssetStatus = onAssetStatus; this.yaw = this.targetYaw = -.35; this.pitch = this.targetPitch = .53; this.cameraHeight = 0; this.previewCamera = { yaw: -.35, pitch: .43, targetYaw: -.35, targetPitch: .43 };
     this.camera = { x: 0, z: 0 }; this.lastTime = null; this.actorMap = new Map(); this.assets = new Map(); this.pending = new Map(); this.errors = new Map();
     this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#b7d9ec'); this.scene.fog = new THREE.Fog('#b7d9ec', 48, 100);
     this.view = new THREE.PerspectiveCamera(43, 1, .1, 180);
@@ -78,7 +80,7 @@ export class Renderer {
     this.scene.add(mesh); return mesh;
   }
   buildWorld() {
-    const rng = seededRandom(65191), ground = new THREE.PlaneGeometry(160, 160, 160, 160); ground.rotateX(-Math.PI / 2);
+    const rng = seededRandom(65191), ground = new THREE.PlaneGeometry(280, 280, 200, 200); ground.rotateX(-Math.PI / 2);
     const pos = ground.attributes.position, colors = [], lush = new THREE.Color('#96b869'), trail = new THREE.Color('#c1b68b');
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i), z = pos.getZ(i); pos.setY(i, groundHeight(x, z) - .04);
@@ -86,12 +88,12 @@ export class Renderer {
       const col = lush.clone().lerp(trail, path * path).multiplyScalar(.95 + rng() * .09); colors.push(col.r, col.g, col.b);
     }
     ground.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); ground.computeVertexNormals();
-    const terrain = new THREE.Mesh(ground, new THREE.MeshToonMaterial({ color: '#ffffff', vertexColors: true, gradientMap: this.toonRamp, map: this.groundTexture(rng) })); terrain.receiveShadow = true; this.scene.add(terrain);
+    const terrain = new THREE.Mesh(ground, new THREE.MeshToonMaterial({ color: '#ffffff', vertexColors: true, gradientMap: this.toonRamp, map: this.groundTexture(rng) })); terrain.receiveShadow = true; this.terrain = terrain; this.scene.add(terrain);
     this.makeGrass(rng); this.makeFlowers(rng);
     // Layered foliage, branching trunks, and varied silhouettes frame the arena.
     const trunk = new THREE.CylinderGeometry(.17, .32, 3.3, 7), crown = new THREE.IcosahedronGeometry(1, 1);
     for (let i = 0; i < 100; i++) {
-      const a = rng() * TAU, r = 17 + rng() * 44, x = Math.cos(a) * r, z = Math.sin(a) * r, s = .8 + rng() * .85;
+      const a = rng() * TAU, r = 17 + rng() * 96, x = Math.cos(a) * r, z = Math.sin(a) * r, s = .8 + rng() * .85;
       const base = groundHeight(x, z);
       this.mesh(trunk, '#81634a', x, base + 1.65 * s, z, s);
       const branch = this.mesh(trunk, '#81634a', x + .55 * s, base + 2.55 * s, z, s * .42, s * .5, s * .42); branch.rotation.z = -.8;
@@ -103,13 +105,13 @@ export class Renderer {
     }
     const stone = new THREE.IcosahedronGeometry(1, 1);
     for (let i = 0; i < 75; i++) {
-      const a = rng() * TAU, r = 18 + rng() * 41, x = Math.sin(a) * r, z = Math.cos(a) * r, size = .45 + rng() * 1.6;
+      const a = rng() * TAU, r = 18 + rng() * 95, x = Math.sin(a) * r, z = Math.cos(a) * r, size = .45 + rng() * 1.6;
       const rock = this.mesh(stone, i % 3 ? '#89988a' : '#a3ab96', x, groundHeight(x, z) + size * .35, z, size, size * .65, size * .8); rock.rotation.set(.2, rng() * TAU, .15);
       if (i % 3 === 0) this.mesh(stone, '#829455', x + .1, groundHeight(x, z) + size * .7, z, size * .6, size * .17, size * .7, false);
     }
     const mountain = new THREE.ConeGeometry(1, 1, 6);
     for (let i = 0; i < 24; i++) {
-      const a = i / 24 * TAU, height = 14 + rng() * 10, r = 85 + rng() * 10;
+      const a = i / 24 * TAU, height = 14 + rng() * 10, r = 140 + rng() * 15;
       const hill = this.mesh(mountain, i % 2 ? '#7eac9f' : '#8bb6a5', Math.sin(a) * r, height * .35, Math.cos(a) * r, 14, height, 14, false); hill.rotation.y = rng();
     }
     // A visible clearing entrance, lanterns, and ruins give the map landmarks.
@@ -165,18 +167,18 @@ export class Renderer {
     };
     const grass = new THREE.InstancedMesh(geometry, material, 5000); let count = 0;
     for (let i = 0; i < 5000; i++) {
-      const x = (rng() - .5) * 112, z = (rng() - .5) * 112;
+      const x = (rng() - .5) * 228, z = (rng() - .5) * 228;
       if (Math.abs(z - Math.sin(x * .1) * 3) < 2.4 || Math.abs(x - 33 - Math.sin(z * .09) * 2) < 4.2) continue;
       _dummy.position.set(x, groundHeight(x, z), z); _dummy.rotation.y = rng() * TAU; _dummy.scale.setScalar(.5 + rng() * 1.1); _dummy.updateMatrix(); grass.setMatrixAt(count, _dummy.matrix);
       grass.setColorAt(count, new THREE.Color().setHSL(.2 + rng() * .035, .35, .55 + rng() * .12)); count++;
     }
-    grass.count = count; grass.instanceMatrix.needsUpdate = true; grass.receiveShadow = true; this.scene.add(grass);
+    grass.count = count; grass.instanceMatrix.needsUpdate = true; grass.receiveShadow = true; this.grass = grass; this.scene.add(grass);
   }
   makeFlowers(rng) {
     const petals = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 5, 4), this.material('#ffffff'), 900), centers = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 5, 4), this.material('#e9bb55'), 180);
     let count = 0;
     for (let i = 0; i < 180; i++) {
-      const x = (rng() - .5) * 82, z = (rng() - .5) * 82;
+      const x = (rng() - .5) * 180, z = (rng() - .5) * 180;
       if (Math.abs(z - Math.sin(x * .1) * 3) < 2.8 || x > 28 && x < 38) continue;
       const y = groundHeight(x, z) + .22;
       for (let n = 0; n < 5; n++) { const a = n * TAU / 5; _dummy.position.set(x + Math.sin(a) * .09, y, z + Math.cos(a) * .09); _dummy.rotation.set(0, a, 0); _dummy.scale.set(.055, .027, .085); _dummy.updateMatrix(); petals.setMatrixAt(count * 5 + n, _dummy.matrix); petals.setColorAt(count * 5 + n, new THREE.Color(i % 3 ? '#f6f0dc' : '#d6b5d8')); }
@@ -245,7 +247,7 @@ export class Renderer {
   }
   async warmArena() {
     // Parse large nonessential models sequentially to limit startup memory peaks.
-    for (const kind of ['gastly', 'geodude', 'zubat', 'pidgey', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
+    for (const kind of ['gastly', 'geodude', 'zubat', 'pidgey', 'sandshrew', 'sandslash', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
   }
   makeActor(kind, key) {
     const asset = this.assets.get(kind); if (!asset) { if (!this.errors.has(kind)) this.requestModel(kind).catch(() => {}); return null; }
@@ -354,16 +356,26 @@ export class Renderer {
     this.bulletPool.count = count; this.bulletPool.instanceMatrix.needsUpdate = true; if (this.bulletPool.instanceColor) this.bulletPool.instanceColor.needsUpdate = true;
   }
   render(g, time, lobby = false) {
-    this.resize(); const p = g.player, elapsed = Math.min(.05, this.lastTime === null ? .016 : Math.max(0, time - this.lastTime)); this.lastTime = time;
+    this.resize();
+    if (this.currentStage !== g.stage) {
+      this.currentStage = g.stage; const theme = LEVELS[g.stage];
+      this.scene.background.set(theme.sky); this.scene.fog.color.set(theme.sky);
+      this.terrain.material.color.set(theme.ground); this.grass.material.color.set(theme.grass);
+      for (const prop of [...this.chests, ...this.shrines]) this.scene.remove(prop.root);
+      this.chests = []; this.shrines = [];
+    }
+    const p = g.player, elapsed = Math.min(.05, this.lastTime === null ? .016 : Math.max(0, time - this.lastTime)); this.lastTime = time;
     const entering = g.status === 'intro', intro = Math.min(1, (g.introTime || 0) / 2.8);
     const dt = lobby || g.status === 'playing' || entering ? elapsed : 0;
     this.camera.x += (p.x - this.camera.x) * .09; this.camera.z += (p.z - this.camera.z) * .09;
-    const yaw = lobby ? -.35 + Math.sin(time * .13) * .11 : this.yaw, pitch = Math.max(.16, Math.min(1.15, this.pitch)), radius = 15;
+    const yaw = lobby ? this.previewCamera.yaw : this.yaw, pitch = Math.max(.16, Math.min(1.15, lobby ? this.previewCamera.pitch : this.pitch)), radius = 15;
     this.cameraHeight += (groundHeight(this.camera.x, this.camera.z) - this.cameraHeight) * (1 - Math.exp(-8 * elapsed));
-    const cameraX = this.camera.x + Math.sin(yaw) * (lobby ? 12 : radius * Math.cos(pitch));
-    const cameraZ = this.camera.z + Math.cos(yaw) * (lobby ? 12 : radius * Math.cos(pitch));
-    this.view.position.set(cameraX, lobby ? 5.6 : this.cameraHeight + 1 + radius * Math.sin(pitch), cameraZ);
-    this.view.lookAt(this.camera.x, lobby ? 1.6 : 1 + this.cameraHeight, this.camera.z); this.view.updateMatrixWorld();
+    const cameraX = this.camera.x + Math.sin(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
+    const cameraZ = this.camera.z + Math.cos(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
+    const target = { x: this.camera.x, y: lobby ? 1.6 : 1 + Math.max(this.cameraHeight, groundHeight(this.camera.x, this.camera.z)), z: this.camera.z };
+    const candidate = { x: cameraX, y: lobby ? 1.6 + 12 * Math.sin(pitch) : this.cameraHeight + 1 + radius * Math.sin(pitch), z: cameraZ };
+    this.view.position.set(cameraX, lobby ? candidate.y : safeCameraHeight(target, candidate), cameraZ);
+    this.view.lookAt(target.x, target.y, target.z); this.view.updateMatrixWorld();
     this.sun.position.set(p.x - 22, 35, p.z + 20); this.sun.target.position.set(p.x, 0, p.z); this.sun.target.updateMatrixWorld();
     this.podium.visible = lobby; if (this.grassShader) this.grassShader.uniforms.uWindTime.value = time;
     for (let i = 0; i < this.ripples.length; i++) this.ripples[i].material.opacity = .25 + (Math.sin(time * 1.5 + i) + 1) * .12;
@@ -381,7 +393,7 @@ export class Renderer {
     const entryScale = entering ? Math.min(1, Math.max(.05, (intro - .12) * 4)) : 1;
     const kind = g.evolved ? EVOLUTIONS[g.starter] : g.starter;
     const old = this.actorMap.get('player'); const moving = !lobby && !!old && Math.hypot(p.x - (old.previousX ?? p.x), p.z - (old.previousZ ?? p.z)) > .003;
-    const player = this.actor(kind, 'player', px, py, introZ, lobby ? Math.atan2(cameraX - px, cameraZ - p.z) : p.angle, lobby ? 1.7 : entryScale, dt, moving || entering, false, lobby || entering || p.invulnerable <= 0 || Math.floor(time * 18) % 2 === 0);
+    const player = this.actor(kind, 'player', px, py, introZ, lobby ? -.58 : p.angle, lobby ? 1.7 : entryScale, dt, moving || entering, false, lobby || entering || p.invulnerable <= 0 || Math.floor(time * 18) % 2 === 0);
     if (player) {
       player.previousX = p.x; player.previousZ = p.z;
       if (!lobby && p.sliding) player.root.scale.y *= .72;

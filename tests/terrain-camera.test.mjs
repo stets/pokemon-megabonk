@@ -25,6 +25,7 @@ test('Ctrl sliding accelerates downhill, stays bounded and stops on release', ()
 
 test('shrines charge only in range and grant exactly one upgrade', () => {
   const g = createGame(); g.spawnTimer = 1e6; g.moves = [];
+  g.player.hp = g.player.maxHp = 1e6;
   const shrine = g.shrines[0]; g.player.x = shrine.x; g.player.z = shrine.z;
   step(g, { interact: true }); assert.equal(shrine.active, true);
   g.player.x = 0; g.player.z = 0; const charge = shrine.charge;
@@ -39,7 +40,7 @@ test('shrines charge only in range and grant exactly one upgrade', () => {
 test('camera eases at the same rate across frame rates and clamps pitch', () => {
   const a = { yaw: 0, pitch: .5, targetYaw: 0, targetPitch: .5 }, b = { ...a };
   turnCamera(a, 100, 10000); turnCamera(b, 100, 10000);
-  assert.equal(a.targetPitch, .16);
+  assert.equal(a.targetPitch, 1.15);
   for (let i = 0; i < 60; i++) easeCamera(a, 1 / 60);
   for (let i = 0; i < 30; i++) easeCamera(b, 1 / 30);
   assert.ok(Math.abs(a.yaw - b.yaw) < 1e-10); assert.ok(Math.abs(a.pitch - b.pitch) < 1e-10);
