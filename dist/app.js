@@ -13,7 +13,7 @@ const sound = new GameAudio();
 const controller = new ControllerInput(); let controllerActive = false, controllerMenuIndex = 0;
 let previousTime = 0, held = new Set(), pulse = {}, dragging = false, dragX = 0, dragY = 0, stick = { x: 0, y: 0 };
 let best = null;
-let assetsPaused = false;
+let assetsPaused = false, lastBossAlert = -1;
 try { best = JSON.parse(localStorage.getItem('pokebonk-best')); } catch { /* Browser storage can be unavailable. */ }
 if (best) $('best').textContent = `BEST RUN ${timeLabel(best.time)} / ${best.kills} BONKS`;
 
@@ -84,7 +84,7 @@ function startRun() {
   }
   renderer.warmArena();
   game = createGame(selected); lobby = false; resultRecorded = false; choicesKey = ''; previousStatus = ''; clearInput();
-  assetsPaused = false;
+  assetsPaused = false; lastBossAlert = -1;
   renderer.camera = { x: 0, z: 0 }; renderer.yaw = renderer.targetYaw = -.35; renderer.pitch = renderer.targetPitch = .53;
   game.status = 'intro'; game.introTime = 0;
   document.body.classList.add('entering'); $('intro').hidden = false; $('hud').hidden = true;
@@ -95,7 +95,7 @@ function startRun() {
   captureMouse();
 }
 function menu() {
-  $('look-hint').hidden = true;
+  $('look-hint').hidden = true; $('boss-alert').hidden = true;
   document.body.classList.remove('entering'); $('intro').hidden = true;
   if (document.pointerLockElement) document.exitPointerLock();
   assetsPaused = false; $('asset-banner').hidden = true;
@@ -333,6 +333,12 @@ function advanceFrame(time) {
     if (game.player.hp < hpBefore) sound.effect('hurt');
     if (game.xp > xpBefore) sound.effect('candy');
     if (game.evolved && !evolvedBefore) sound.effect('evolve');
+    const alert = game.bossAlert;
+    $('boss-alert').hidden = !alert || alert.remaining <= 0;
+    if (alert?.remaining > 0) {
+      $('boss-alert-name').textContent = alert.name; $('boss-alert-title').textContent = alert.title;
+      if (lastBossAlert !== alert.id) { lastBossAlert = alert.id; sound.effect('boss'); }
+    }
     if (game.status === 'upgrade') displayUpgrade();
     if (game.status === 'stage-clear') {
       $('stage-clear').hidden = false; $('cleared-area').textContent = LEVELS[game.stage].name;

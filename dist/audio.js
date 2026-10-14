@@ -48,6 +48,7 @@ export class GameAudio {
   }
   effect(name) {
     if (!this.enabled || !this.context) return;
+    if (name === 'boss') { [36, 43, 48].forEach((n, i) => this.note(midi(n), .65, .3, 'sawtooth', i * .18)); this.hiss(.2, .2, 700); }
     if (name === 'select') this.note(660, .07, .2, 'sine', 0, this.effects, 900);
     if (name === 'portal') { this.hiss(1.1, .18, 700); [48, 55, 60, 67, 72].forEach((n, i) => this.note(midi(n), .65, .12, 'sine', i * .16)); }
     if (name === 'start') [60, 64, 67, 72].forEach((n, i) => this.note(midi(n), .16, .22, 'triangle', i * .08));

@@ -43,7 +43,7 @@ export function createGame(starter = 'pikachu', seed = Date.now()) {
     moves: [{ id: config.move, level: 1, cooldown: .3 }, ...(starter === 'eevee' ? [{ id: 'bite', level: 1, cooldown: .6 }] : [])], enemies: [], bullets: [], drops: [], fx: [], numbers: [], nextId: 1,
     spawnTimer: .2, bossStages: [], finalBossDead: false, evolved: false, choices: [], upgradeSource: 'level',
     ...levelObjects(0),
-    notice: 'SURVIVE THE WILD', noticeTime: 3, events: [] };
+    notice: 'SURVIVE THE WILD', noticeTime: 3, bossAlert: null, events: [] };
 }
 function event(g, name) { g.events.push(name); if (g.events.length > 12) g.events.shift(); }
 function notice(g, message, duration = 2.7) { g.notice = message; g.noticeTime = duration; }
@@ -211,6 +211,7 @@ export function step(g, input = {}, dt = 1 / 60) {
   const depth = waterDepth(p.x, p.z), swimming = depth > .3 && p.y < depth + .2;
   g.time += dt; g.stageTime += dt; g.wave = Math.min(6, 1 + Math.floor(g.stageTime / 30));
   g.noticeTime = Math.max(0, g.noticeTime - dt);
+  if (g.bossAlert) g.bossAlert.remaining = Math.max(0, g.bossAlert.remaining - dt);
   p.invulnerable = Math.max(0, p.invulnerable - dt); p.dashCooldown = Math.max(0, p.dashCooldown - dt);
   let mx = input.x ?? 0, mz = input.z ?? 0; const magnitude = Math.hypot(mx, mz);
   if (magnitude > 1) { mx /= magnitude; mz /= magnitude; }
@@ -272,6 +273,7 @@ export function step(g, input = {}, dt = 1 / 60) {
       const kind = time === 150 ? LEVELS[g.stage].boss : 'gengar';
       g.bossStages.push(time); const boss = spawnEnemy(g, kind);
       if (time === 150) g.stageBossId = boss.id;
+      g.bossAlert = { id: boss.id, name: kind.toUpperCase(), title: time === 150 ? 'REGION BOSS ARRIVES' : 'ALPHA ENCOUNTER', remaining: 6 };
       notice(g, `${kind.toUpperCase()} HAS ENTERED ${LEVELS[g.stage].name.toUpperCase()}`, 4); event(g, 'boss-spawned');
     }
   }
@@ -355,6 +357,7 @@ export function advanceStage(g) {
   g.stage++; g.stageTime = 0; g.duration = LEVELS[g.stage].duration;
   g.enemies = []; g.bullets = []; g.fx = []; g.numbers = []; g.drops = [];
   g.bossStages = []; g.finalBossDead = false; g.stageBossId = null; g.spawnTimer = .4; g.wave = 1;
+  g.bossAlert = null;
   Object.assign(g, levelObjects(g.stage));
   Object.assign(g.player, { x: 0, z: 0, y: 0, vy: 0, slideX: 0, slideZ: 0, sliding: false, dash: 0, invulnerable: 1.5, hp: Math.min(g.player.maxHp, g.player.hp + g.player.maxHp * .35) });
   g.status = 'playing'; notice(g, LEVELS[g.stage].name.toUpperCase(), 4);
