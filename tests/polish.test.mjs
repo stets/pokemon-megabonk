@@ -103,6 +103,26 @@ test('later waves add evolved rock enemies without removing Geodude', () => {
   assert.ok(kinds.has('geodude') && kinds.has('graveler') && kinds.has('golem'));
 });
 
+test('Capture Ranger miniboss spawns once and telegraphs a temporary capture slow', () => {
+  const g = createGame(); g.moves = []; g.pokeballs = []; g.spawnTimer = 1e6;
+  g.player.hp = g.player.maxHp = 10000; g.stageTime = 44.99;
+  step(g, {}, .02); assert.equal(g.enemies.filter(e => e.kind === 'ranger').length, 1);
+  const ranger = g.enemies.find(e => e.kind === 'ranger'); ranger.x = 6; ranger.z = 0; ranger.speed = 0; ranger.attackTimer = 0;
+  step(g); assert.equal(g.captureZones.length, 1); assert.equal(g.player.capturedTime, 0);
+  for (let i = 0; i < 75; i++) step(g);
+  assert.ok(g.player.capturedTime > 0); assert.equal(g.enemies.filter(e => e.kind === 'ranger').length, 1);
+  g.enemies = []; g.bullets = [];
+  for (let i = 0; i < 120; i++) step(g);
+  assert.equal(g.player.capturedTime, 0);
+});
+
+test('Mewtwo arrival alert survives unrelated notices and pauses', () => {
+  const g = createGame(); g.stage = 2; g.stageTime = 149.99; g.spawnTimer = 1e6; g.rangerStages = [45, 105]; g.bossStages = [60, 120];
+  step(g, {}, .02); assert.equal(g.bossAlert.name, 'MEWTWO'); assert.equal(g.bossAlert.remaining, 6);
+  g.notice = 'EVOLUTION'; g.status = 'upgrade'; const remaining = g.bossAlert.remaining;
+  step(g, {}, .05); assert.equal(g.bossAlert.name, 'MEWTWO'); assert.equal(g.bossAlert.remaining, remaining);
+});
+
 test('unlanded projectile expiry increments misses separately from immunity', () => {
   const g = createGame(); g.moves = []; g.pokeballs = []; g.spawnTimer = 1e6;
   g.bullets.push({ x: 0, z: 0, vx: 1, vz: 0, radius: .2, life: .001, enemy: false, type: 'WATER', damage: 10, color: '#fff', hitIds: new Set(), pierce: 1 });

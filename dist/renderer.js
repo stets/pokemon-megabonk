@@ -2,17 +2,17 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { safeCameraPosition } from './camera-motion.js?v=11';
-import { SCENERY } from './obstacles.js?v=11';
-import { buildRegion } from './regions.js?v=11';
-import { LEVELS } from './levels.js?v=11';
-import { RiverWaves } from './water.js?v=11';
-import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=11';
-import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=11';
-import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=11';
-import { seededRandom } from './engine.js?v=11';
-import { paintOverlay } from './overlay.js?v=11';
-import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=11';
+import { safeCameraPosition } from './camera-motion.js?v=12';
+import { SCENERY } from './obstacles.js?v=12';
+import { buildRegion } from './regions.js?v=12';
+import { LEVELS } from './levels.js?v=12';
+import { RiverWaves } from './water.js?v=12';
+import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=12';
+import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=12';
+import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=12';
+import { seededRandom } from './engine.js?v=12';
+import { paintOverlay } from './overlay.js?v=12';
+import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=12';
 
 const TAU = Math.PI * 2;
 const _vector = new THREE.Vector3();
@@ -202,12 +202,28 @@ export class Renderer {
     petals.count = count * 5; centers.count = count; petals.receiveShadow = true; centers.receiveShadow = true; this.scene.add(petals, centers);
   }
   buildPools() {
+    this.fireMaterial = new THREE.ShaderMaterial({ transparent: true, depthWrite: false,
+      uniforms: { time: { value: 0 } },
+      vertexShader: `varying vec2 vUv; varying float vSeed;
+        void main(){vUv=uv;vSeed=instanceMatrix[3].x+instanceMatrix[3].z;
+        vec4 center=modelViewMatrix*instanceMatrix*vec4(0.,0.,0.,1.);
+        vec2 size=vec2(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz));
+        gl_Position=projectionMatrix*(center+vec4(position.xy*size,0.,0.));}`,
+      fragmentShader: `varying vec2 vUv;varying float vSeed;uniform float time;
+        void main(){vec2 uv=floor(vUv*32.)/32.;float y=uv.y;float x=(uv.x-.5)*2.;
+        x+=sin(y*13.-time*17.+vSeed)*.09;
+        float width=(1.-y)*.58+.05+sin(y*17.+time*9.+vSeed)*.04;
+        float edge=abs(x)/width;if(edge>1.||y<.04||y>.97)discard;
+        vec3 color=mix(vec3(1.,.85,.24),vec3(1.,.23,.03),y);
+        color=mix(color,vec3(1.,.98,.75),max(0.,1.-edge*2.)*(1.-y));
+        gl_FragColor=vec4(color,.95*(1.-y*.35));}` });
+    this.firePool = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), this.fireMaterial, 200); this.firePool.frustumCulled = false; this.firePool.count = 0; this.scene.add(this.firePool);
     this.dropPool = new THREE.InstancedMesh(this.geometry.candy, new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#7092af', emissiveIntensity: .12, roughness: .35 }), 400);
     this.bulletPool = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial({ color: '#ffffff' }), 600);
     this.dropPool.count = this.bulletPool.count = 0; this.dropPool.frustumCulled = this.bulletPool.frustumCulled = false;
     this.scene.add(this.dropPool, this.bulletPool);
   }
-  ready(kind) { return this.assets.has(kind); }
+  ready(kind) { return kind === 'ranger' || this.assets.has(kind); }
   async prepare(kind) {
     if (this.ready(kind)) { this.onAssetStatus({ kind, status: 'ready' }); return; }
     await this.requestModel(kind);
@@ -264,7 +280,27 @@ export class Renderer {
     // Parse large nonessential models sequentially to limit startup memory peaks.
     for (const kind of ['gastly', 'geodude', 'graveler', 'golem', 'zubat', 'pidgey', 'sandshrew', 'sandslash', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
   }
+  makeRanger(key) {
+    const root = new THREE.Group(), meshes = [], materials = [], limbs = [];
+    const owned = new Map();
+    const part = (parent, x, y, z, sx, sy, sz, color) => {
+      if (!owned.has(color)) { const material = this.material(color).clone(); owned.set(color, material); materials.push({ material, color: material.color.clone() }); }
+      const mesh = new THREE.Mesh(this.geometry.box, owned.get(color)); mesh.position.set(x, y, z); mesh.scale.set(sx, sy, sz); mesh.castShadow = true; parent.add(mesh); meshes.push(mesh); return mesh;
+    };
+    part(root, 0, 1.25, 0, .68, .85, .38, '#648b64'); part(root, 0, .88, 0, .7, .13, .4, '#b6a27b');
+    part(root, 0, 1.95, 0, .48, .48, .42, '#dfbea0'); part(root, 0, 2.2, 0, .65, .2, .58, '#c0a06c'); part(root, 0, 2.12, .15, .88, .08, .72, '#c0a06c');
+    for (const side of [-1, 1]) {
+      part(root, side * .11, 2, .22, .055, .07, .025, '#263139');
+      const leg = new THREE.Group(); leg.position.set(side * .21, .86, 0); root.add(leg); part(leg, 0, -.35, 0, .25, .7, .27, '#455878'); part(leg, 0, -.73, .1, .28, .16, .4, '#363d46'); limbs.push({ group: leg, side });
+      part(root, side * .46, 1.25, .05, .24, .72, .25, '#648b64'); part(root, side * .46, .86, .05, .2, .22, .22, '#dfbea0');
+    }
+    part(root, .47, .85, .24, .24, .24, .24, '#e16f62');
+    this.actorRoot.add(root);
+    const entry = { key, kind: 'ranger', root, model: root, mixer: new THREE.AnimationMixer(root), clips: new Map(), actions: new Map(), action: null, fadingAction: null, fadeLeft: 0, materials, meshes, skeletons: new Set(), outlines: [], limbs, walkTime: 0 };
+    this.actorMap.set(key, entry); return entry;
+  }
   makeActor(kind, key) {
+    if (kind === 'ranger') return this.makeRanger(key);
     const asset = this.assets.get(kind); if (!asset) { if (!this.errors.has(kind)) this.requestModel(kind).catch(() => {}); return null; }
     const model = cloneSkeleton(asset.scene), transform = new THREE.Group(), root = new THREE.Group();
     model.position.set(-asset.center.x, -asset.floor, -asset.center.z); transform.scale.setScalar(asset.scale); transform.add(model); root.add(transform); this.actorRoot.add(root);
@@ -289,6 +325,14 @@ export class Renderer {
       const outline = mesh.clone(false); outline.material = this.outlineMaterial; outline.castShadow = outline.receiveShadow = false;
       outline.renderOrder = -1; mesh.parent.add(outline); entry.outlines.push(outline);
     }
+    if (kind === 'pidgey') {
+      entry.wings = [];
+      for (const side of [-1, 1]) {
+        const wing = new THREE.Group(); wing.position.set(side * .35, .82, -.08); root.add(wing);
+        for (let i = 0; i < 3; i++) { const feather = new THREE.Mesh(this.geometry.box, this.material(i === 0 ? '#a78151' : '#dfc89d')); feather.position.set(side * (.32 - i * .04), 0, i * .12); feather.scale.set(.65 - i * .1, .055, .16); feather.castShadow = true; wing.add(feather); }
+        entry.wings.push({ wing, side });
+      }
+    }
     this.playActor(entry, 'idle', true); this.actorMap.set(key, entry); return entry;
   }
   playActor(actor, name, instant = false) {
@@ -303,13 +347,15 @@ export class Renderer {
     let actor = this.actorMap.get(key);
     if (actor && actor.kind !== kind) { this.removeActor(key); actor = null; }
     actor ??= this.makeActor(kind, key); if (!actor) return;
-    actor.root.position.set(x, y, z); actor.root.rotation.y = angle + MODELS[kind].faceYaw; actor.root.scale.setScalar(scale); actor.root.visible = visible;
+    actor.root.position.set(x, y, z); actor.root.rotation.y = angle + (MODELS[kind]?.faceYaw ?? 0); actor.root.scale.setScalar(scale); actor.root.visible = visible;
     for (const mesh of actor.meshes) mesh.castShadow = shadow;
     for (const outline of actor.outlines) outline.visible = shadow || key === 'player';
     this.playActor(actor, kind === 'pidgey' ? 'idle' : moving ? 'run' : 'idle'); actor.mixer.update(dt);
+    if (kind === 'ranger') { actor.walkTime += dt; for (const limb of actor.limbs) limb.group.rotation.x = moving ? Math.sin(actor.walkTime * 8) * .35 * limb.side : 0; }
     if (kind === 'pidgey') {
       actor.flightTime = (actor.flightTime ?? 0) + dt;
       actor.flightBones ??= actor.model.children.length ? ['LArm', 'RArm'].map(name => { const bone = actor.model.getObjectByName(name); return bone ? { bone, rest: bone.quaternion.clone(), side: name[0] === 'L' ? 1 : -1 } : null; }).filter(Boolean) : [];
+      for (const { wing, side } of actor.wings) wing.rotation.z = side * (.25 + Math.sin(actor.flightTime * 16) * .6);
       for (const { bone, rest, side } of actor.flightBones) { bone.quaternion.copy(rest); bone.rotateZ(side * (.65 + Math.sin(actor.flightTime * 16) * .6)); }
     }
     finishAnimationFade(actor, dt);
@@ -370,8 +416,16 @@ export class Renderer {
       this.dropPool.setMatrixAt(count, _dummy.matrix); this.dropPool.setColorAt(count, _color.set(drop.kind === 'berry' ? '#f29a68' : drop.value > 3 ? '#d5a7ec' : '#88d2f3')); count++;
     }
     this.dropPool.count = count; this.dropPool.instanceMatrix.needsUpdate = true; if (this.dropPool.instanceColor) this.dropPool.instanceColor.needsUpdate = true;
-    count = 0;
+    count = 0; let fireCount = 0; this.fireMaterial.uniforms.time.value = time;
     for (const bullet of g.bullets) {
+      if (!bullet.enemy && bullet.type === 'FIRE') {
+        const angle = Math.atan2(bullet.vx, bullet.vz);
+        for (let i = 0; i < 3 && fireCount < 200; i++) {
+          const x = bullet.x - Math.sin(angle) * i * .3, z = bullet.z - Math.cos(angle) * i * .3;
+          _dummy.position.set(x, groundHeight(x, z) + 1, z); _dummy.rotation.set(0, 0, 0); _dummy.scale.set(1.1 - i * .22, 1.55 - i * .25, 1); _dummy.updateMatrix(); this.firePool.setMatrixAt(fireCount++, _dummy.matrix);
+        }
+        continue;
+      }
       for (let i = 0; i < (bullet.enemy ? 1 : 4); i++) {
         if (count >= 600) break;
         const angle = Math.atan2(bullet.vx, bullet.vz), r = bullet.radius * (1 - i * .22);
@@ -379,6 +433,7 @@ export class Renderer {
         _dummy.rotation.set(0, 0, 0); _dummy.scale.setScalar(r); _dummy.updateMatrix(); this.bulletPool.setMatrixAt(count, _dummy.matrix); this.bulletPool.setColorAt(count, _color.set(bullet.color)); count++;
       }
     }
+    this.firePool.count = fireCount; this.firePool.instanceMatrix.needsUpdate = true;
     this.bulletPool.count = count; this.bulletPool.instanceMatrix.needsUpdate = true; if (this.bulletPool.instanceColor) this.bulletPool.instanceColor.needsUpdate = true;
   }
   render(g, time, lobby = false) {
@@ -400,9 +455,12 @@ export class Renderer {
     this.camera.x += (p.x - this.camera.x) * .09; this.camera.z += (p.z - this.camera.z) * .09;
     const yaw = lobby ? this.previewCamera.yaw : this.yaw, pitch = Math.max(.16, Math.min(1.15, lobby ? this.previewCamera.pitch : this.pitch)), radius = 15;
     this.cameraHeight += (groundHeight(this.camera.x, this.camera.z) - this.cameraHeight) * (1 - Math.exp(-8 * elapsed));
-    const cameraX = this.camera.x + Math.sin(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
-    const cameraZ = this.camera.z + Math.cos(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
-    const target = { x: this.camera.x, y: lobby ? 1.6 : 1 + Math.max(this.cameraHeight, groundHeight(this.camera.x, this.camera.z)), z: this.camera.z };
+    const pivotX = lobby ? 3.2 : this.camera.x, pivotZ = lobby ? 0 : this.camera.z;
+    const cameraX = pivotX + Math.sin(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
+    const cameraZ = pivotZ + Math.cos(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
+    if (lobby) this.view.setViewOffset(this.width, this.heightPx, -this.width * .22, 0, this.width, this.heightPx);
+    else if (this.view.view?.enabled) this.view.clearViewOffset();
+    const target = { x: pivotX, y: lobby ? 1.6 : 1 + Math.max(this.cameraHeight, groundHeight(this.camera.x, this.camera.z)), z: pivotZ };
     const candidate = { x: cameraX, y: lobby ? 1.6 + 12 * Math.sin(pitch) : this.cameraHeight + 1 + radius * Math.sin(pitch), z: cameraZ };
     const cameraPosition = lobby ? candidate : safeCameraPosition(target, candidate);
     this.view.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
@@ -412,7 +470,7 @@ export class Renderer {
     for (let i = 0; i < this.ripples.length; i++) this.ripples[i].material.opacity = .25 + (Math.sin(time * 1.5 + i) + 1) * .12;
     if (dt > 0) {
       const previous = this.actorMap.get('player');
-      if (waterDepth(p.x, p.z) > .2 && previous && Math.hypot(p.x - (previous.previousX ?? p.x), p.z - (previous.previousZ ?? p.z)) > .005) this.riverWaves.disturb((p.x - riverCenter(p.z) + 3.6) / 7.2 * 8, (130 - p.z) / 260 * 160, .05);
+      if (waterDepth(p.x, p.z) > .2 && previous && Math.hypot(p.x - (previous.previousX ?? p.x), p.z - (previous.previousZ ?? p.z)) > .005) this.riverWaves.disturb((p.x - riverCenter(p.z) + 3.6) / 7.2 * 8, (130 + p.z) / 260 * 160, .05);
       this.riverWaves.update(dt); this.waterTexture.offset.y -= dt * .11;
       const positions = this.water.geometry.attributes.position;
       for (let i = 0; i < positions.count; i++) positions.setY(i, WATER_LEVEL + this.riverWaves.heights[i] + Math.sin(time * 1.9 + positions.getZ(i) * .2) * .015);
@@ -432,7 +490,7 @@ export class Renderer {
     const entryScale = entering ? Math.min(1, Math.max(.05, (intro - .12) * 4)) : 1;
     const kind = g.evolved ? EVOLUTIONS[g.starter] : g.starter;
     const old = this.actorMap.get('player'); const moving = !lobby && !!old && Math.hypot(p.x - (old.previousX ?? p.x), p.z - (old.previousZ ?? p.z)) > .003;
-    const player = this.actor(kind, 'player', px, py, introZ, lobby ? -.58 : p.angle, lobby ? 1.7 : entryScale, dt, moving || entering, false, lobby || entering || p.invulnerable <= 0 || Math.floor(time * 18) % 2 === 0);
+    const player = this.actor(kind, 'player', px, py, introZ, lobby ? -.35 : p.angle, lobby ? 1.7 : entryScale, dt, moving || entering, false, lobby || entering || p.invulnerable <= 0 || Math.floor(time * 18) % 2 === 0);
     if (player) {
       player.previousX = p.x; player.previousZ = p.z;
       if (!lobby && p.sliding) player.root.scale.y *= .72;
@@ -441,7 +499,7 @@ export class Renderer {
     if (!lobby) for (const enemy of g.enemies) {
       const dist = Math.hypot(enemy.x - p.x, enemy.z - p.z); if (dist > 40) continue;
       const key = 'enemy:' + enemy.id; active.add(key);
-      this.actor(enemy.kind, key, enemy.x, groundHeight(enemy.x, enemy.z) + (['gastly', 'zubat', 'pidgey'].includes(enemy.kind) ? .55 + Math.sin(time * 2 + enemy.phase) * .1 : 0), enemy.z, enemy.angle,
+      this.actor(enemy.kind, key, enemy.x, groundHeight(enemy.x, enemy.z) + (['gastly', 'zubat', 'pidgey'].includes(enemy.kind) ? (enemy.kind === 'pidgey' ? 1.15 : .55) + Math.sin(time * 2 + enemy.phase) * .1 : 0), enemy.z, enemy.angle,
         enemy.elite ? 1.2 : 1, dt, true, enemy.hit > 0, true, dist < 19);
     }
     for (const key of this.actorMap.keys()) if (!active.has(key)) this.removeActor(key);

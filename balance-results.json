@@ -1,0 +1,453 @@
+{
+  "scenario": "six seeded, first-area avoidance runs with counter-first upgrades; directional AI is not a human playtest",
+  "results": [
+    {
+      "starter": "pikachu",
+      "survival": 180,
+      "kills": 399,
+      "level": 12,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 407,
+          "level": 12,
+          "status": "playing",
+          "damage": 62110
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 349,
+          "level": 11,
+          "status": "playing",
+          "damage": 45064
+        },
+        {
+          "seed": 123,
+          "time": 64,
+          "kills": 108,
+          "level": 5,
+          "status": "dead",
+          "damage": 9538
+        },
+        {
+          "seed": 4721,
+          "time": 180,
+          "kills": 399,
+          "level": 12,
+          "status": "playing",
+          "damage": 63506
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 431,
+          "level": 12,
+          "status": "playing",
+          "damage": 68987
+        },
+        {
+          "seed": 91277,
+          "time": 180,
+          "kills": 308,
+          "level": 9,
+          "status": "playing",
+          "damage": 46174
+        }
+      ]
+    },
+    {
+      "starter": "charmander",
+      "survival": 180,
+      "kills": 323,
+      "level": 10,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 237,
+          "level": 10,
+          "status": "playing",
+          "damage": 34903
+        },
+        {
+          "seed": 81,
+          "time": 145,
+          "kills": 323,
+          "level": 10,
+          "status": "dead",
+          "damage": 42566
+        },
+        {
+          "seed": 123,
+          "time": 180,
+          "kills": 319,
+          "level": 11,
+          "status": "playing",
+          "damage": 45963
+        },
+        {
+          "seed": 4721,
+          "time": 166,
+          "kills": 362,
+          "level": 9,
+          "status": "dead",
+          "damage": 48216
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 401,
+          "level": 12,
+          "status": "playing",
+          "damage": 58386
+        },
+        {
+          "seed": 91277,
+          "time": 164,
+          "kills": 189,
+          "level": 7,
+          "status": "dead",
+          "damage": 21732
+        }
+      ]
+    },
+    {
+      "starter": "bulbasaur",
+      "survival": 180,
+      "kills": 206,
+      "level": 8,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 200,
+          "level": 8,
+          "status": "playing",
+          "damage": 23534
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 132,
+          "level": 6,
+          "status": "playing",
+          "damage": 14267
+        },
+        {
+          "seed": 123,
+          "time": 180,
+          "kills": 179,
+          "level": 7,
+          "status": "playing",
+          "damage": 20075
+        },
+        {
+          "seed": 4721,
+          "time": 166,
+          "kills": 206,
+          "level": 7,
+          "status": "dead",
+          "damage": 24938
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 364,
+          "level": 13,
+          "status": "playing",
+          "damage": 49416
+        },
+        {
+          "seed": 91277,
+          "time": 180,
+          "kills": 257,
+          "level": 9,
+          "status": "playing",
+          "damage": 32488
+        }
+      ]
+    },
+    {
+      "starter": "squirtle",
+      "survival": 180,
+      "kills": 444,
+      "level": 11,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 448,
+          "level": 12,
+          "status": "playing",
+          "damage": 70310
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 444,
+          "level": 13,
+          "status": "playing",
+          "damage": 68296
+        },
+        {
+          "seed": 123,
+          "time": 180,
+          "kills": 389,
+          "level": 11,
+          "status": "playing",
+          "damage": 56599
+        },
+        {
+          "seed": 4721,
+          "time": 180,
+          "kills": 413,
+          "level": 11,
+          "status": "playing",
+          "damage": 59430
+        },
+        {
+          "seed": 65191,
+          "time": 173,
+          "kills": 448,
+          "level": 11,
+          "status": "dead",
+          "damage": 69557
+        },
+        {
+          "seed": 91277,
+          "time": 180,
+          "kills": 295,
+          "level": 10,
+          "status": "playing",
+          "damage": 44656
+        }
+      ]
+    },
+    {
+      "starter": "eevee",
+      "survival": 180,
+      "kills": 254,
+      "level": 9,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 234,
+          "level": 8,
+          "status": "playing",
+          "damage": 31291
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 254,
+          "level": 9,
+          "status": "playing",
+          "damage": 39450
+        },
+        {
+          "seed": 123,
+          "time": 180,
+          "kills": 300,
+          "level": 10,
+          "status": "playing",
+          "damage": 39085
+        },
+        {
+          "seed": 4721,
+          "time": 180,
+          "kills": 153,
+          "level": 7,
+          "status": "playing",
+          "damage": 17730
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 255,
+          "level": 10,
+          "status": "playing",
+          "damage": 35683
+        },
+        {
+          "seed": 91277,
+          "time": 180,
+          "kills": 138,
+          "level": 7,
+          "status": "playing",
+          "damage": 17391
+        }
+      ]
+    },
+    {
+      "starter": "vulpix",
+      "survival": 180,
+      "kills": 274,
+      "level": 9,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 332,
+          "level": 9,
+          "status": "playing",
+          "damage": 43415
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 426,
+          "level": 13,
+          "status": "playing",
+          "damage": 65359
+        },
+        {
+          "seed": 123,
+          "time": 73,
+          "kills": 100,
+          "level": 4,
+          "status": "dead",
+          "damage": 9216
+        },
+        {
+          "seed": 4721,
+          "time": 162,
+          "kills": 244,
+          "level": 8,
+          "status": "dead",
+          "damage": 25563
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 274,
+          "level": 10,
+          "status": "playing",
+          "damage": 39678
+        },
+        {
+          "seed": 91277,
+          "time": 152,
+          "kills": 205,
+          "level": 7,
+          "status": "dead",
+          "damage": 22311
+        }
+      ]
+    },
+    {
+      "starter": "psyduck",
+      "survival": 180,
+      "kills": 423,
+      "level": 12,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 196,
+          "level": 8,
+          "status": "playing",
+          "damage": 21114
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 215,
+          "level": 9,
+          "status": "playing",
+          "damage": 25390
+        },
+        {
+          "seed": 123,
+          "time": 180,
+          "kills": 306,
+          "level": 10,
+          "status": "playing",
+          "damage": 42450
+        },
+        {
+          "seed": 4721,
+          "time": 180,
+          "kills": 423,
+          "level": 12,
+          "status": "playing",
+          "damage": 65356
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 518,
+          "level": 14,
+          "status": "playing",
+          "damage": 87243
+        },
+        {
+          "seed": 91277,
+          "time": 180,
+          "kills": 452,
+          "level": 12,
+          "status": "playing",
+          "damage": 66879
+        }
+      ]
+    },
+    {
+      "starter": "sandshrew",
+      "survival": 180,
+      "kills": 270,
+      "level": 10,
+      "runs": [
+        {
+          "seed": 19,
+          "time": 180,
+          "kills": 200,
+          "level": 7,
+          "status": "playing",
+          "damage": 22759
+        },
+        {
+          "seed": 81,
+          "time": 180,
+          "kills": 248,
+          "level": 11,
+          "status": "playing",
+          "damage": 33559
+        },
+        {
+          "seed": 123,
+          "time": 180,
+          "kills": 270,
+          "level": 10,
+          "status": "playing",
+          "damage": 42413
+        },
+        {
+          "seed": 4721,
+          "time": 180,
+          "kills": 245,
+          "level": 9,
+          "status": "playing",
+          "damage": 29484
+        },
+        {
+          "seed": 65191,
+          "time": 180,
+          "kills": 272,
+          "level": 10,
+          "status": "playing",
+          "damage": 43281
+        },
+        {
+          "seed": 91277,
+          "time": 180,
+          "kills": 288,
+          "level": 9,
+          "status": "playing",
+          "damage": 42292
+        }
+      ]
+    }
+  ]
+}

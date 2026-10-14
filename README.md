@@ -1,68 +1,68 @@
-# Pokébonk — Wild Run
+# Pokebonk — Wild Run
 
-A playable, original browser prototype of a Pokémon-themed arena survivor inspired by Megabonk. Choose Pikachu, Charmander, Bulbasaur, or Squirtle. Move freely through a 3D clearing while moves attack automatically. Collect XP candy, select held items and moves, open chests, evolve at level eight, and survive the alpha encounters. Defeat Mewtwo and survive three minutes to win.
+A browser arena survivor with eight playable Pokémon, type-based combat, and a three-area campaign: Verdant Ridges, Copper Badlands, and Moonlit Ruins. Each area lasts at least three minutes and requires defeating its region boss. Your moves, items, levels and coins carry into the next area. Mewtwo guards the final region.
 
-## Play locally
+Live site: https://stets.github.io/pokemon-megabonk/
 
-From your regular WSL terminal:
+## Play
+
+Run `python3 ../serve-game.py` from WSL and open `http://localhost:8090`. Static hosting also works: the game has no server-side runtime. Graphics, portraits, library files, font, and generated icons are included in `dist/assets`.
+
+- WASD or arrows: move relative to the camera.
+- Mouse: look around. Click the arena to capture the pointer; Escape releases it and pauses.
+- Space: jump. Shift: dash. C: slide downhill.
+- E: open a nearby chest or activate a crystal charge shrine. Hold the shrine’s ring for six seconds to choose a blessing.
+- 1/2/3: choose an upgrade. 1–8: select a starter on the title screen.
+- Drag non-interactive title-screen space to orbit the selected Pokémon.
+
+Camera settings in the main menu and pause screen save automatically. Vertical look defaults to the reverse of the initial prototype’s direction. Both axes can be inverted, and look sensitivity applies to mouse, touch orbit and controllers.
+
+## Controllers
+
+Connect a standard Bluetooth/USB gamepad, then press a button so the browser exposes it. Left stick moves; right stick looks; A/Cross jumps; B/Circle dashes; X/Square interacts; LT/L2 or left-stick click slides; Menu/Options pauses. In menus, D-pad or left stick navigates and A/Cross confirms. Shoulder buttons change starters. In pause settings, up/down changes focus and left/right adjusts the slider. B/Circle resumes.
+
+The game uses the browser Gamepad API. Keyboard, mouse and touch remain supported. Apple Vision Pro compatibility requires a controller supported by visionOS and exposed to Safari; actual headset hardware verification is separate from the automated virtual-controller tests.
+
+## Combat and exploration
+
+The modern 18-type chart supplies weaknesses, resistances and immunities, including dual-type multipliers. Electric cannot hurt Rock/Ground Geodude; Water and Grass deal 4× damage to it. Auto-targeting prefers vulnerable enemies, and upgrade choices favor counters that improve coverage, with extra priority for overcoming immunities. Abilities such as Levitate and same-type attack bonuses are not modeled.
+
+Eevee starts with Swift and a weaker close-range Bite so Ghost immunity does not strand its opening build. Crits start at 12% chance and 1.7× damage. Scope Lens increases chance to a 50% cap; Razor Claw increases the multiplier to a 3× cap. Crit, resistance and immunity feedback are distinct. Pause statistics track actual projectile misses separately from immune hits; there is no random accuracy penalty.
+
+The playable arena has a 108-unit radius, rolling hills, authored hamlets, solid tree/rock/building collisions, and spacing checks for scenery. Pokéball supplies break into blue XP diamonds. Trees sway subtly. The river has flowing pixel texture, a lightweight propagating wave simulation, movement wakes, swimming drag, current drift and buoyancy.
+
+Later waves add Graveler and Golem while retaining Geodude. Capture Ranger minibosses appear at 45 and 105 seconds in each area, telegraph capture zones and throw capture balls. Being caught briefly slows movement. Boss arrivals use a dedicated banner and sound cue so other notices cannot overwrite Mewtwo’s entrance.
+
+## Technical structure
+
+- `dist/engine.js`: deterministic movement, combat, upgrades, stages, enemies and drops.
+- `dist/type-chart.js`, `levels.js`, `regions.js`, `obstacles.js`, `terrain.js`: shared rules, maps and collision data.
+- `dist/renderer.js`: Three.js, textured animated GLBs, toon shading, outlines, pixel terrain, procedural buildings, fire sprites, bird wings, and scenery animation.
+- `dist/camera-motion.js`, `settings.js`, `controller.js`: camera collision/easing, saved preferences and normalized controller input.
+- `dist/water.js`, `lightning.js`, `overlay.js`: wave physics, branched lightning and readable combat feedback.
+- `dist/audio.js`: original synthesized music, progressively increasing from 118 to 178 BPM across the campaign.
+- `dist/actor-lifecycle.js`: owned animation and GPU-resource cleanup.
+
+The game catches runtime errors and exposes `window.pokebonkCrash`. `window.pokebonk` offers a small developer hook for inspecting the simulation and camera.
+
+## Verification and balance
+
+Run `node --test tests/*.test.mjs` with Node 24. Tests cover combat, type multipliers, immunity, crit caps, supplies, movement/collision, camera settings, hill clearance, controller input, river physics, stage progression, miniboss capture and boss alerts. Browser rendering and interaction checks are separate.
+
+Run `node scripts/balance.mjs` to compare starters across six identical first-area seeds. It writes `balance-results.json` with survival, kills and levels. This is an initial comparison using a directional avoidance bot, not proof that every human strategy or late-game build is balanced.
+
+## Publish
+
+From a regular WSL terminal:
 
 ```bash
-python3 /home/stets/projects/pokemon-megabonk/serve-game.py
+gh auth login --hostname github.com --git-protocol https --web --scopes workflow
+gh auth setup-git
+bash ../publish-github-pages.sh
 ```
 
-Open `http://localhost:8090`. The launcher tries to open your Windows browser. Keep the terminal running. Refresh to load edits.
+The script publishes the browser game, tests, attribution, prompts and balance tooling to a public `pokemon-megabonk` repository in your signed-in account. An optional argument chooses another repo name. It refuses to overwrite unrelated projects and excludes parent-folder analysis artifacts and Sites metadata. Subsequent pushes to main run the checked-in Pages workflow.
 
-WASD or arrows move relative to the camera. Space jumps; Shift dashes. Move the mouse to look around without holding a button; the camera eases smoothly into turns. Starting a desktop run captures the pointer when supported, and Escape releases it. Touch camera control uses dragging. Hold C to slide downhill with momentum. E opens nearby chests for 15 coins or activates a crystal shrine. Stay within a shrine’s ring for six seconds to earn a one-time upgrade; leaving the ring pauses its charge. Escape pauses. The upgrade screen accepts 1/2/3. Touch devices have a movement stick and action buttons. Each run begins with a skippable 2.8-second portal entrance; Escape skips it, and enemies and the run timer wait until it ends. The top diamond badge shows your level. The sound button toggles original synthesized music and effects. Audio starts after a user gesture.
+## Credits
 
-## How it works
-
-- `dist/engine.js` owns the simulation: position, collision, enemy waves, attacks, drops, leveling, upgrades, and victory. It has no browser dependencies. Seeded random numbers allow repeatable tests.
-- `dist/renderer.js` uses Three.js r180 with glTF Pokémon models, skeletal animation blending, three-band toon shading, inverted-hull character outlines, directional-light shadow maps, 64-pixel character texture atlases, nearest-filtered pixel terrain, and wind-driven grass. Candy, projectiles, grass, and flowers use instancing: many copies are submitted together to keep draw calls low. Camera rotation uses horizontal yaw and vertical pitch; pitch is clamped above the ground.
-- `dist/actor-lifecycle.js` lazily binds clips, stops completed crossfades, and frees each removed actor's skeleton textures and materials without disposing shared species geometry or image textures. The animation loop catches JavaScript failures and exposes `window.pokebonkCrash` with the error and scene counts.
-- `dist/terrain.js` supplies shared rolling hills and gradients for terrain placement and downhill sliding. `dist/camera-motion.js` uses frame-rate independent easing. `dist/world-props.js` builds hinged treasure chests, charge shrines, and the pixelated shader portal.
-- `dist/models.js` identifies all starter, evolution, enemy, and boss assets. `dist/overlay.js` draws damage labels and attack accents above the 3D scene. The game pauses while an encounter's assets load, so unseen enemies cannot attack.
-- `dist/app.js` connects input and interface elements to the simulation and renderer. It pauses on loss of focus, displays upgrade choices, and saves the best run locally.
-- `dist/audio.js` uses the Web Audio API to schedule an original melody, bass, drums, and short effects. Notes are synthesized, so no audio downloads are needed.
-- `dist/style.css` handles the responsive menu, status display, dialogs, and touch controls.
-
-The animation loop advances the simulation with a bounded elapsed time. Projectile collision checks each traveled segment, preventing fast shots from skipping enemies between frames. Upgrade dialogs freeze simulation time.
-
-## Verify
-
-With Node 24:
-
-```bash
-node --test tests/*.test.mjs
-```
-
-Twelve tests cover every starter's attack, movement speed and bounds, pursuit and attack range, damage immunity, XP/upgrade pauses, evolution, chest costs, bosses, death/reset, invalid upgrades, and a seeded three-minute combat simulation. Browser visual/audio QA is separate from these simulation checks.
-
-Two lifecycle tests verify owned-resource cleanup and repeated idle/run transitions without allocating unused clips or leaving faded clips active. These tests validate the lifecycle code; they do not reproduce a browser tab or GPU crash.
-
-## Relationship to Megabonk
-
-The parent directory contains static metadata analysis and the native method address mapping. Those files describe shipped artifacts, not observed execution. Prototype mechanics and balance are independently implemented; the current prototype does not claim exact Megabonk behavior. No Megabonk binaries or extracted assets are included in this browser build.
-
-Native decompilation remains pending. Run `../analyze-megabonk.sh` from a regular WSL terminal after installing the Ghidra provider. Its first import may take minutes. It saves REA Evidence for `EnemyWave.EnemiesPerSecond` plus a reusable analysis snapshot.
-
-## Graphics downloads
-
-The v2 renderer replaces the primitive character models with textured, animated GLBs. Three.js and models load from the browser's internet connection on first use; downloads are cached per species, and cloned enemies share their meshes and textures. See `ASSET-CREDITS.md` for sources.
-
-If CDN access is blocked, or for offline/local assets, run in the regular WSL terminal:
-
-```bash
-python3 /home/stets/projects/pokemon-megabonk/cache-graphics.py
-```
-
-The script caches the pinned rendering library and all required models, checks each GLB's geometry/skeleton/animation data, records hashes, and switches rendering dependencies and portraits to local files. Hard-refresh after it finishes. This is optional when browser CDN downloads work.
-
-The title, menu, and upgrade cards use Alagard, a bitmap gothic font by Hewett Tsoi / Pix3M (see asset credits). The preview launcher downloads the original font locally when possible. A webfont CDN and Georgia provide fallbacks. Camera, slide, terrain, shrine, and ring/burst rendering regressions are covered by additional automated tests. Browser appearance, pointer lock, audio, and GPU shader compilation still need interactive verification.
-
-## Type matchups
-
-Attacks use the modern 18-type chart, including dual-type multipliers and immunities. Water and Grass deal 4× damage to Rock/Ground Geodude; Electric cannot hurt it. Auto-targeting prioritizes vulnerable enemies, and level-up choices guarantee an available move that improves coverage when possible. Rock Throw and Shadow Ball provide additional Rock and Ghost coverage. Floating labels distinguish super-effective, resisted, and immune hits. Boss projectiles also check the starter’s defensive types; contact damage stays neutral. Abilities such as Levitate and same-type attack bonuses are not modeled.
-
-## GitHub Pages
-
-Run `../publish-github-pages.sh` from a regular WSL terminal after `gh auth login --web --scopes workflow`. The script publishes the browser game and tests to a public `pokemon-megabonk` repo in your signed-in account, enables GitHub Pages, and waits for deployment. An optional argument chooses another repo name. It excludes parent-folder analysis artifacts and Sites metadata, and refuses to overwrite unrelated existing projects. Later pushes to main run the checked-in Pages workflow.
+See `ASSET-CREDITS.md` for model, portrait, library and font sources. Six generated move icons and their prompts are documented in `ICON-PROMPTS.md`. This is an unofficial Pokémon fan project. It independently implements its simulation and contains no extracted Megabonk binaries, art or source code.

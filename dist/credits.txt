@@ -11,3 +11,5 @@ Starter portraits come from the [PokeAPI sprite collection](https://github.com/P
 Terrain, vegetation, landmarks, camera behavior, interface, combat effects, and synthesized music are authored for this prototype. They are not extracted Megabonk assets.
 
 The browser loads Three.js from jsDelivr and GLBs/portraits from GitHub by default. `../cache-graphics.py` installs them locally, validates GLB envelopes and embedded resources, records SHA-256 digests, and switches the import map to local files. The initial graphics download requires internet access. After local installation, normal gameplay does not fetch remote models or rendering dependencies.
+
+Six move icons (Electric, Fire, Grass, Water, Rock, Ghost) were generated with the built-in OpenAI Imagegen tool for this project. Their prompts and saved asset paths are recorded in `ICON-PROMPTS.md`. Region buildings, Capture Ranger geometry, river wave physics, fire shaders, lightning paths and bird wing accents are independently authored.

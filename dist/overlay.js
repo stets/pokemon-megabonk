@@ -1,5 +1,5 @@
-import { groundHeight } from './terrain.js?v=11';
-import { drawLightning } from './lightning.js?v=11';
+import { groundHeight } from './terrain.js?v=12';
+import { drawLightning } from './lightning.js?v=12';
 
 const TAU = Math.PI * 2;
 
@@ -11,6 +11,9 @@ export function paintOverlay(g, realTime, lobby) {
       if (fx.kind === 'line') {
         const a = this.project(fx.x, groundHeight(fx.x, fx.z) + 1, fx.z), b = this.project(fx.tx, groundHeight(fx.tx, fx.tz) + 1, fx.tz);
         if (a && b) drawLightning(ctx, a, b, fx.color, fx.x * 3 + fx.z * 7 + Math.floor(fx.life * 28));
+      } else if (fx.kind === 'fire') {
+        const center = this.project(fx.x, groundHeight(fx.x, fx.z) + .9, fx.z);
+        if (center) for (let i = 0; i < 7; i++) { const a = i * TAU / 7, r = (1 - fx.life / fx.maxLife) * 30; ctx.fillStyle = i % 2 ? '#fff2a5' : '#ff9f42'; ctx.fillRect(center.x + Math.cos(a) * r, center.y + Math.sin(a) * r - r * .6, 4, 6); }
       } else if (fx.kind === 'ring' || fx.kind === 'burst') {
         ctx.strokeStyle = fx.color; ctx.lineWidth = fx.kind === 'ring' ? 4 : 2; ctx.beginPath();
         const r = fx.radius * (1 - fx.life / fx.maxLife * .4);
@@ -20,9 +23,19 @@ export function paintOverlay(g, realTime, lobby) {
       }
     }
     ctx.globalAlpha = 1;
+    for (const zone of g.captureZones ?? []) {
+      ctx.strokeStyle = '#ffa575'; ctx.lineWidth = 4; ctx.beginPath();
+      for (let i = 0; i <= 40; i++) {
+        const a = i / 40 * TAU, x = zone.x + Math.cos(a) * zone.radius, z = zone.z + Math.sin(a) * zone.radius;
+        const point = this.project(x, groundHeight(x, z) + .1, z); if (!point) continue;
+        if (i === 0) ctx.moveTo(point.x, point.y); else ctx.lineTo(point.x, point.y);
+      }
+      ctx.stroke(); const center = this.project(zone.x, groundHeight(zone.x, zone.z) + .4, zone.z);
+      if (center) { ctx.font = '20px Alagard, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd6a5'; ctx.fillText('MOVE!', center.x, center.y); }
+    }
     if (!lobby) for (const e of g.enemies) {
       if ((!e.boss && e.hp >= e.maxHp) || Math.hypot(e.x - g.player.x, e.z - g.player.z) > 25) continue;
-      const pos = this.project(e.x, groundHeight(e.x, e.z) + (e.boss ? 4.4 : 2.2), e.z); if (!pos) continue;
+      const pos = this.project(e.x, groundHeight(e.x, e.z) + (e.kind === 'ranger' ? 2.7 : e.kind === 'pidgey' ? 3.1 : e.boss ? 4.4 : 2.2), e.z); if (!pos) continue;
       const w = e.boss ? 150 : e.elite ? 78 : 64, barHeight = e.boss ? 12 : 8;
       ctx.fillStyle = '#121b22'; ctx.fillRect(pos.x - w / 2 - 2, pos.y - 2, w + 4, barHeight + 4); ctx.fillStyle = '#26352bcc'; ctx.fillRect(pos.x - w / 2, pos.y, w, barHeight);
       ctx.fillStyle = e.boss ? '#c998ed' : '#f0a783'; ctx.fillRect(pos.x - w / 2, pos.y, w * Math.max(0, e.hp / e.maxHp), barHeight);

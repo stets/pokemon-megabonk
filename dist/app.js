@@ -1,9 +1,11 @@
-import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=11';
-import { easeCamera, turnCamera } from './camera-motion.js?v=11';
-import { loadSettings, saveSettings } from './settings.js?v=11';
-import { ControllerInput } from './controller.js?v=11';
-import { GameAudio } from './audio.js?v=11';
-import { EVOLUTIONS } from './models.js?v=11';
+import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=12';
+import { easeCamera, turnCamera } from './camera-motion.js?v=12';
+import { loadSettings, saveSettings } from './settings.js?v=12';
+import { BUILDINGS } from './regions.js?v=12';
+import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=12';
+import { ControllerInput } from './controller.js?v=12';
+import { GameAudio } from './audio.js?v=12';
+import { EVOLUTIONS } from './models.js?v=12';
 
 const $ = id => document.getElementById(id);
 const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
@@ -74,6 +76,8 @@ function captureMouse() {
 }
 document.addEventListener('pointerlockchange', () => {
   $('look-hint').hidden = document.pointerLockElement === $('world') || lobby;
+  if (!document.pointerLockElement && !lobby && game.status === 'intro' && document.hasFocus()) finishIntro();
+  if (!document.pointerLockElement && !lobby && game.status === 'playing' && !controllerActive) pause();
 });
 document.addEventListener('pointerlockerror', () => { $('look-hint').hidden = lobby; });
 $('capture-mouse').addEventListener('click', captureMouse);
@@ -156,14 +160,29 @@ function showResult() {
   }
   sound.effect(win ? 'win' : 'lose');
 }
+let mapStage = -1; const mapBase = document.createElement('canvas'); mapBase.width = mapBase.height = 192;
 function paintMap() {
   const map = $('minimap'), ctx = map.getContext('2d'), p = game.player, center = map.width / 2, scale = (center - 10) / ARENA_RADIUS;
-  ctx.clearRect(0, 0, map.width, map.height); ctx.strokeStyle = '#d4ddc922'; ctx.lineWidth = 1;
+  if (mapStage !== game.stage) {
+    mapStage = game.stage; const base = mapBase.getContext('2d'); base.clearRect(0, 0, 192, 192); base.save(); base.beginPath(); base.arc(center, center, center - 10, 0, Math.PI * 2); base.clip();
+    for (let x = -ARENA_RADIUS; x < ARENA_RADIUS; x += 5) for (let z = -ARENA_RADIUS; z < ARENA_RADIUS; z += 5) {
+      const hue = [95, 38, 255][game.stage], light = 24 + Math.min(9, Math.max(0, groundHeight(x, z))) * 2.3;
+      base.fillStyle = `hsl(${hue} 25% ${light}%)`; base.fillRect(center + x * scale, center + z * scale, 5 * scale + 1, 5 * scale + 1);
+    }
+    base.strokeStyle = '#c8b486'; base.lineWidth = 3; base.beginPath();
+    for (let x = -ARENA_RADIUS; x <= ARENA_RADIUS; x += 4) { const px = center + x * scale, py = center + Math.sin(x * .1) * 3 * scale; if (x === -ARENA_RADIUS) base.moveTo(px, py); else base.lineTo(px, py); } base.stroke();
+    base.strokeStyle = '#72c5e0'; base.lineWidth = 6; base.beginPath();
+    for (let z = -ARENA_RADIUS; z <= ARENA_RADIUS; z += 4) { const px = center + riverCenter(z) * scale, py = center + z * scale; if (z === -ARENA_RADIUS) base.moveTo(px, py); else base.lineTo(px, py); } base.stroke();
+    for (const b of BUILDINGS) { base.fillStyle = b.roof; base.fillRect(center + (b.x - b.w / 2) * scale, center + (b.z - b.d / 2) * scale, b.w * scale, b.d * scale); }
+    base.restore();
+  }
+  ctx.clearRect(0, 0, map.width, map.height); ctx.drawImage(mapBase, 0, 0); ctx.strokeStyle = '#d4ddc922'; ctx.lineWidth = 1;
   for (const r of [ARENA_RADIUS * .3 * scale, ARENA_RADIUS * .6 * scale, ARENA_RADIUS * scale]) { ctx.beginPath(); ctx.arc(center, center, r, 0, Math.PI * 2); ctx.stroke(); }
   const point = (x, z, col, r) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(center + x * scale, center + z * scale, r, 0, Math.PI * 2); ctx.fill(); };
   for (const e of game.enemies) point(e.x, e.z, e.boss ? '#dca4ef' : '#e5967b', e.boss ? 3 : 1.5);
   for (const c of game.chests) if (!c.opened) point(c.x, c.z, '#e4cd85', 2.5);
   for (const shrine of game.shrines) if (!shrine.completed) point(shrine.x, shrine.z, '#bd8cff', 3);
+  for (const ball of game.pokeballs) if (!ball.broken) point(ball.x, ball.z, '#7ce1fb', 2);
   point(p.x, p.z, '#e6f3bf', 3);
 }
 function syncHud() {
@@ -302,14 +321,15 @@ function handleController(pad, dt) {
 }
 
 function advanceFrame(time) {
-  const dt = Math.min((time - previousTime) / 1000 || .016, .05); previousTime = time;
+  const frameElapsed = Math.min((time - previousTime) / 1000 || .016, .5);
+  const dt = Math.min(frameElapsed, .05); previousTime = time;
   let pad;
   try { pad = controller.poll(navigator.getGamepads?.() ?? [], time / 1000); } catch { pad = controller.poll([], time / 1000); }
   if (renderer && document.hasFocus() && !document.hidden) handleController(pad, dt);
   if (renderer) { easeCamera(renderer, dt); easeCamera(renderer.previewCamera, dt); }
   if (!lobby) {
     if (game.status === 'intro' && !document.hidden && document.hasFocus()) {
-      game.introTime += dt;
+      game.introTime += frameElapsed;
       if (game.introTime >= 2.8) finishIntro();
     }
     if (document.pointerLockElement && game.status !== 'playing' && game.status !== 'intro') document.exitPointerLock();
@@ -367,7 +387,7 @@ function frame(time) {
 }
 buildStarters(); game.status = 'lobby';
 try {
-  const { Renderer } = await import('./renderer.js?v=11');
+  const { Renderer } = await import('./renderer.js?v=12');
   renderer = new Renderer($('world'), $('effects'), updateAssetStatus);
   updateAssetStatus();
   for (const kind of ['pikachu', 'gastly', 'geodude']) renderer.prepare(kind).catch(() => {});
