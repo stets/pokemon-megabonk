@@ -7,6 +7,8 @@ export const LEVELS = [
 export function levelObjects(stage = 0) {
   const extra = stage > 0 ? [{ x: 52, z: -48, opened: false }, { x: -59, z: 43, opened: false }] : [];
   return {
+    pokeballs: [[4, 8], [-5, 8], [7, 16], [-6, -12], [24, 5], [-32, -9], [38, -24], [-49, 16], [58, 4], [2, 42], [-16, 57], [65, -52]]
+      .map(([x, z], i) => ({ id: -100 - i, x, z, hp: 18, supply: true, types: [], broken: false })),
     chests: [{ x: -10, z: -12, opened: false }, { x: 15, z: 6, opened: false }, { x: -18, z: 18, opened: false }, ...extra],
     shrines: [{ x: -23, z: -18 }, { x: 18, z: 22 }, { x: 8, z: -35 }, { x: -60, z: -48 }, { x: 63, z: 46 }]
       .map(s => ({ ...s, charge: 0, active: false, completed: false })),

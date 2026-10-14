@@ -27,6 +27,7 @@ export const SPECIES_TYPES = {
   gastly: ['GHOST', 'POISON'], gengar: ['GHOST', 'POISON'], geodude: ['ROCK', 'GROUND'],
   zubat: ['POISON', 'FLYING'], pidgey: ['NORMAL', 'FLYING'], mewtwo: ['PSYCHIC'],
   eevee: ['NORMAL'], vaporeon: ['WATER'], vulpix: ['FIRE'], ninetales: ['FIRE'], psyduck: ['WATER'], golduck: ['WATER'], sandshrew: ['GROUND'], sandslash: ['GROUND'],
+  graveler: ['ROCK', 'GROUND'], golem: ['ROCK', 'GROUND'],
 };
 
 export function effectiveness(attackType, defenderTypes) {

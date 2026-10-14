@@ -1,5 +1,5 @@
-import { groundHeight } from './terrain.js?v=4';
-import { drawLightning } from './lightning.js?v=10';
+import { groundHeight } from './terrain.js?v=11';
+import { drawLightning } from './lightning.js?v=11';
 
 const TAU = Math.PI * 2;
 

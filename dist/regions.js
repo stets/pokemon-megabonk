@@ -25,19 +25,27 @@ export function buildRegion(T, material, height) {
     const object = new T.Mesh(new T.BoxGeometry(w, h, d), material(color));
     object.position.set(x, y, z); object.castShadow = object.receiveShadow = true; root.add(object); return object;
   };
+  const pixelMaterials = new Map();
+  function pixelMaterial(color, style) {
+    const key = color + style; if (pixelMaterials.has(key)) return pixelMaterials.get(key);
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 32;
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 32, 32);
+    for (let row = 0; row < 4; row++) for (let col = 0; col < 4; col++) {
+      const x = col * 8 + (row % 2 ? 4 : 0), y = row * 8;
+      ctx.fillStyle = (row + col) % 2 ? '#d9d4c4' : '#efead7'; ctx.fillRect(x, y, 7, 7);
+      ctx.fillStyle = style === 'tiles' ? '#857d73' : '#b5b1a2'; ctx.fillRect(x, y + 6, 7, 2);
+    }
+    const texture = new T.CanvasTexture(canvas); texture.minFilter = texture.magFilter = T.NearestFilter; texture.generateMipmaps = false; texture.wrapS = texture.wrapT = T.RepeatWrapping; texture.repeat.set(style === 'tiles' ? 1 : 2, 1);
+    const mat = material(color).clone(); mat.map = texture; mat.needsUpdate = true; pixelMaterials.set(key, mat); return mat;
+  }
   for (const b of BUILDINGS) {
     const base = height(b.x, b.z);
     box(b.w + .3, .3, b.d + .3, b.x, base + .15, b.z, '#5b6671');
-    box(b.w, 3, b.d, b.x, base + 1.8, b.z, '#e3dbb6');
-    // Two sloped roof panels, with stepped tile rows and dark eaves.
-    for (const side of [-1, 1]) {
-      const roof = box(b.w + .6, .24, b.d * .62, b.x, base + 3.75, b.z + side * b.d * .24, b.roof);
-      roof.rotation.x = side * .45;
-      for (let i = 0; i < 4; i++) {
-        const z = b.z + side * (i * b.d * .12 + .1), y = base + 4.2 - i * .22;
-        box(b.w + .6, .07, .08, b.x, y, z, '#624c4a');
-      }
-    }
+    box(b.w, 3, b.d, b.x, base + 1.8, b.z, '#e3dbb6').material = pixelMaterial('#e3dbb6', 'walls');
+    const run = b.d / 2 + .35, rise = 1.05;
+    const profile = new T.Shape(); profile.moveTo(-run, 0); profile.lineTo(0, rise); profile.lineTo(run, 0); profile.closePath();
+    const roof = new T.Mesh(new T.ExtrudeGeometry(profile, { depth: b.w + .6, bevelEnabled: false }), pixelMaterial(b.roof, 'tiles'));
+    roof.rotation.y = Math.PI / 2; roof.position.set(b.x - (b.w + .6) / 2, base + 3.3, b.z); roof.castShadow = true; roof.receiveShadow = true; root.add(roof);
     box(1, 1.9, .09, b.x, base + 1.25, b.z + b.d / 2 + .06, '#527773');
     box(.15, .15, .08, b.x + .3, base + 1.3, b.z + b.d / 2 + .12, '#e6c476');
     for (const side of [-1, 1]) {

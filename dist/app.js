@@ -1,9 +1,9 @@
-import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=8';
-import { easeCamera, turnCamera } from './camera-motion.js?v=9';
-import { loadSettings, saveSettings } from './settings.js?v=9';
-import { ControllerInput } from './controller.js?v=10';
-import { GameAudio } from './audio.js';
-import { EVOLUTIONS } from './models.js';
+import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=11';
+import { easeCamera, turnCamera } from './camera-motion.js?v=11';
+import { loadSettings, saveSettings } from './settings.js?v=11';
+import { ControllerInput } from './controller.js?v=11';
+import { GameAudio } from './audio.js?v=11';
+import { EVOLUTIONS } from './models.js?v=11';
 
 const $ = id => document.getElementById(id);
 const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
@@ -105,7 +105,7 @@ function menu() {
 }
 function pause() {
   if (lobby) return;
-  if (game.status === 'playing') { game.status = 'paused'; clearInput(); $('paused').hidden = false; $('resume').focus(); }
+  if (game.status === 'playing') { game.status = 'paused'; $('combat-stats').textContent = `CRIT ${Math.round(game.stats.critChance * 100)}% · ${game.stats.critMultiplier.toFixed(2)}× DAMAGE · ${game.combat.criticalHits} CRITS · ${game.combat.shotsMissed} MISSED SHOTS · ${game.combat.immuneHits} IMMUNE HITS`; clearInput(); $('paused').hidden = false; $('resume').focus(); }
   else if (game.status === 'paused') { game.status = 'playing'; $('paused').hidden = true; clearInput(); captureMouse(); }
 }
 $('start').addEventListener('click', startRun); $('again').addEventListener('click', startRun); $('change').addEventListener('click', menu);
@@ -120,7 +120,7 @@ function buildMoves() {
   for (const move of game.moves) {
     const data = MOVES[move.id], el = document.createElement('div'); el.className = 'move'; el.style.setProperty('--accent', data.color);
     el.title = `${data.name} · ${data.type} · level ${move.level}`; el.setAttribute('aria-label', el.title); el.dataset.move = move.id;
-    el.innerHTML = `<span aria-hidden="true">${moveIcon(move.id)}</span><span class="move-level">LV ${move.level}</span><span class="move-charge"></span>`; $('moves').append(el);
+    el.innerHTML = `<span class="move-symbol" aria-hidden="true">${moveIcon(move.id)}</span><strong class="move-name">${data.name}</strong><span class="move-type">${data.type}</span><span class="move-level">LV ${move.level}</span><span class="move-charge"></span>`; $('moves').append(el);
   }
 }
 function choose(id) {
@@ -168,7 +168,7 @@ function paintMap() {
 }
 function syncHud() {
   const p = game.player, data = STARTERS[game.starter];
-  $('player-name').textContent = (game.evolved ? data.evolved : data.name).toUpperCase(); $('player-type').textContent = data.type;
+  $('player-name').textContent = (game.evolved ? data.evolved : data.name).toUpperCase(); $('player-type').textContent = game.player.types.join(' / ');
   $('avatar').textContent = MOVES[data.move].icon; $('avatar').style.color = data.color;
   $('health-fill').style.width = `${p.hp / p.maxHp * 100}%`; $('health-fill').style.background = p.hp / p.maxHp < .3 ? '#f0987d' : '#d8ef85';
   $('health-number').textContent = `${Math.ceil(p.hp)} / ${p.maxHp} HP`;
@@ -190,6 +190,7 @@ function syncHud() {
 }
 
 window.addEventListener('keydown', event => {
+  if (event.target?.matches?.('input, select, textarea')) return;
   const key = event.key.toLowerCase();
   // Keep cancelable Ctrl+movement shortcuts out of active play. Sliding
   // uses C because browsers can reserve Ctrl+W before JavaScript sees it.
@@ -205,7 +206,9 @@ window.addEventListener('keydown', event => {
 window.addEventListener('keyup', event => held.delete(event.key.toLowerCase()));
 window.addEventListener('blur', () => { clearInput(); if (game.status === 'playing' && !lobby) pause(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { clearInput(); if (game.status === 'playing' && !lobby) pause(); } });
-$('world').addEventListener('pointerdown', event => {
+document.addEventListener('pointerdown', event => {
+  if (event.target.closest('button, a, input, select, textarea, details, fieldset, label')) return;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
   if (lobby) { dragging = true; dragX = event.clientX; dragY = event.clientY; $('world').setPointerCapture(event.pointerId); return; }
   if (game.status !== 'playing') return;
   if (event.pointerType === 'mouse') { captureMouse(); $('world').focus(); return; }
@@ -358,7 +361,7 @@ function frame(time) {
 }
 buildStarters(); game.status = 'lobby';
 try {
-  const { Renderer } = await import('./renderer.js?v=8');
+  const { Renderer } = await import('./renderer.js?v=11');
   renderer = new Renderer($('world'), $('effects'), updateAssetStatus);
   updateAssetStatus();
   for (const kind of ['pikachu', 'gastly', 'geodude']) renderer.prepare(kind).catch(() => {});
@@ -370,4 +373,4 @@ try {
 }
 
 // Small developer hook for inspecting an actual run without affecting normal play.
-window.pokebonk = { get state() { return game; }, startRun, pause };
+window.pokebonk = { get state() { return game; }, get camera() { return { yaw: renderer.yaw, pitch: renderer.pitch, previewYaw: renderer.previewCamera.yaw, previewPitch: renderer.previewCamera.pitch, position: renderer.view.position.toArray() }; }, startRun, pause };

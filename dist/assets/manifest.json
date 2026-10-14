@@ -22,7 +22,9 @@
     "094",
     "133",
     "134",
-    "150"
+    "150",
+    "075",
+    "076"
   ],
   "reports": {
     "001": {
@@ -323,6 +325,34 @@
       "sha256": "f29ed4c0081a5e600543e3ae35476af596418ca3dbcb6bdf9bbfa73f842542b2",
       "meshes": 2,
       "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "075": {
+      "bytes": 5694584,
+      "sha256": "8f54ac01878e1aa85162dd763de412acfbf5ef336c018167abb8d36c94378f49",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "076": {
+      "bytes": 7384708,
+      "sha256": "4fee12e82fd788394e0fd87eb4eecaa9abf053ab27d9f258aed76643f665985a",
+      "meshes": 12,
+      "skins": 7,
       "animations": [
         "attack",
         "happy",

@@ -1,13 +1,14 @@
-import { ARENA_RADIUS, groundSlope } from './terrain.js?v=10';
-export { ARENA_RADIUS } from './terrain.js?v=10';
-import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=7';
-import { avoidBuildings } from './regions.js?v=10';
-import { LEVELS, levelObjects } from './levels.js?v=10';
-export { LEVELS } from './levels.js?v=10';
+import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=11';
+export { ARENA_RADIUS } from './terrain.js?v=11';
+import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=11';
+import { avoidBuildings } from './regions.js?v=11';
+import { moveWithCollisions } from './obstacles.js?v=11';
+import { LEVELS, levelObjects } from './levels.js?v=11';
+export { LEVELS } from './levels.js?v=11';
 
 export const STARTERS = {
   pikachu: { name: 'Pikachu', evolved: 'Raichu', type: 'ELECTRIC', color: '#ffda4a', move: 'thunder', speed: 8.2, hp: 90, description: 'Chain lightning. Fast feet. Absolute chaos.' },
-  charmander: { name: 'Charmander', evolved: 'Charmeleon', type: 'FIRE', color: '#ff9361', move: 'ember', speed: 7.4, hp: 105, description: 'Piercing fireballs. Make the forest feel the heat.' },
+  charmander: { name: 'Charmander', evolved: 'Charmeleon', type: 'FIRE', color: '#ff9361', move: 'ember', speed: 7.8, hp: 105, description: 'Piercing fireballs. Make the forest feel the heat.' },
   bulbasaur: { name: 'Bulbasaur', evolved: 'Ivysaur', type: 'GRASS', color: '#97db83', move: 'vine', speed: 6.9, hp: 120, description: 'Wide vine sweeps. A little tank with a big bulb.' },
   squirtle: { name: 'Squirtle', evolved: 'Wartortle', type: 'WATER', color: '#74cbea', move: 'water', speed: 7.5, hp: 105, description: 'Rapid water shots. Keep the horde at a distance.' },
   eevee: { name: 'Eevee', evolved: 'Vaporeon', type: 'NORMAL', color: '#d6b48a', move: 'swift', speed: 8.6, hp: 95, description: 'Piercing stars. Quick on its paws, dangerous at range.' },
@@ -16,15 +17,16 @@ export const STARTERS = {
   sandshrew: { name: 'Sandshrew', evolved: 'Sandslash', type: 'GROUND', color: '#dfbe6c', move: 'sand', speed: 7.6, hp: 115, description: 'Sand pulses. Armored paws and a ground-shaking attitude.' },
 };
 export const MOVES = {
-  thunder: { name: 'Thunder Shock', type: 'ELECTRIC', color: '#ffdc50', cooldown: .95, damage: 24, range: 14, icon: 'ϟ' },
+  thunder: { name: 'Thunder Shock', type: 'ELECTRIC', color: '#ffdc50', cooldown: 1.1, damage: 20, range: 14, icon: 'ϟ' },
   ember: { name: 'Ember', type: 'FIRE', color: '#ff925e', cooldown: .72, damage: 21, range: 17, icon: '✦' },
   vine: { name: 'Vine Whip', type: 'GRASS', color: '#a9e485', cooldown: 1.25, damage: 32, range: 5.7, icon: '❧' },
   water: { name: 'Water Gun', type: 'WATER', color: '#80d9f6', cooldown: .48, damage: 15, range: 17, icon: '≈' },
   rock: { name: 'Rock Throw', type: 'ROCK', color: '#d3bc83', cooldown: 1.1, damage: 34, range: 15, speed: 14, icon: '⬟' },
   shadow: { name: 'Shadow Ball', type: 'GHOST', color: '#c29af4', cooldown: 1.05, damage: 30, range: 16, speed: 17, icon: '◉' },
-  swift: { name: 'Swift', type: 'NORMAL', color: '#ffe1a0', cooldown: .65, damage: 20, range: 18, speed: 24, icon: '★' },
+  swift: { name: 'Swift', type: 'NORMAL', color: '#ffe1a0', cooldown: .65, damage: 17, range: 18, speed: 24, icon: '★' },
   psychic: { name: 'Confusion', type: 'PSYCHIC', color: '#f5a3e1', cooldown: 1.15, damage: 29, range: 7.5, icon: '◎' },
-  sand: { name: 'Sand Tomb', type: 'GROUND', color: '#dfbe6c', cooldown: 1.3, damage: 31, range: 6.5, icon: '◌' },
+  sand: { name: 'Sand Tomb', type: 'GROUND', color: '#dfbe6c', cooldown: 1.05, damage: 36, range: 7.2, icon: '◌' },
+  bite: { name: 'Bite', type: 'DARK', color: '#bb9bcc', cooldown: 1.25, damage: 16, range: 4.8, icon: '⋁' },
 };
 export function seededRandom(seed = 4721) {
   return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t ^= t + Math.imul(t ^ t >>> 7, 61 | t); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -38,7 +40,7 @@ export function createGame(starter = 'pikachu', seed = Date.now()) {
     player: { types: [...SPECIES_TYPES[starter]], x: 0, z: 0, y: 0, vy: 0, slideX: 0, slideZ: 0, sliding: false, angle: 0, hp: config.hp, maxHp: config.hp, speed: config.speed, invulnerable: 0, dash: 0, dashCooldown: 0, dashX: 0, dashZ: -1 },
     stats: { damage: 1, haste: 1, magnet: 3.8, armor: 0, projectiles: 1, critChance: .12, critMultiplier: 1.7 },
     combat: { shotsFired: 0, shotsHit: 0, shotsMissed: 0, immuneHits: 0, criticalHits: 0, damageDealt: 0 },
-    moves: [{ id: config.move, level: 1, cooldown: .3 }], enemies: [], bullets: [], drops: [], fx: [], numbers: [], nextId: 1,
+    moves: [{ id: config.move, level: 1, cooldown: .3 }, ...(starter === 'eevee' ? [{ id: 'bite', level: 1, cooldown: .6 }] : [])], enemies: [], bullets: [], drops: [], fx: [], numbers: [], nextId: 1,
     spawnTimer: .2, bossStages: [], finalBossDead: false, evolved: false, choices: [], upgradeSource: 'level',
     ...levelObjects(0),
     notice: 'SURVIVE THE WILD', noticeTime: 3, events: [] };
@@ -47,9 +49,10 @@ function event(g, name) { g.events.push(name); if (g.events.length > 12) g.event
 function notice(g, message, duration = 2.7) { g.notice = message; g.noticeTime = duration; }
 export function spawnEnemy(g, kind, position, elite = false) {
   const angle = g.rng() * Math.PI * 2, radius = 20 + g.rng() * 7;
-  const roster = g.stage === 0 && g.stageTime < 20 ? ['gastly', 'geodude'] : LEVELS[g.stage].enemies;
+  const baseRoster = g.stage === 0 && g.stageTime < 20 ? ['gastly', 'geodude'] : LEVELS[g.stage].enemies;
+  const roster = [...baseRoster, ...(g.stageTime > 55 || g.stage > 0 ? ['graveler'] : []), ...(g.stageTime > 120 || g.stage > 1 ? ['golem'] : [])];
   const type = kind ?? roster[Math.floor(g.rng() * roster.length)];
-  const defaults = { gastly: [42, 3.4, .65], geodude: [76, 2.2, .85], zubat: [30, 4.8, .58], pidgey: [44, 3.9, .64], gengar: [1000, 2.8, 1.65], mewtwo: [2400, 3.3, 1.8], sandshrew: [58, 3.8, .65], sandslash: [95, 4.1, .85] }[type];
+  const defaults = { gastly: [42, 3.4, .65], geodude: [76, 2.2, .85], graveler: [135, 2.5, 1.1], golem: [240, 2.7, 1.35], zubat: [30, 4.8, .58], pidgey: [44, 3.9, .64], gengar: [1000, 2.8, 1.65], mewtwo: [2400, 3.3, 1.8], sandshrew: [58, 3.8, .65], sandslash: [95, 4.1, .85] }[type];
   const scale = 1 + g.stage * .75 + g.stageTime / 180;
   const e = { id: g.nextId++, kind: type, types: [...SPECIES_TYPES[type]], x: position?.x ?? g.player.x + Math.cos(angle) * radius, z: position?.z ?? g.player.z + Math.sin(angle) * radius,
     hp: defaults[0] * scale * (elite ? 1.8 : 1), maxHp: defaults[0] * scale * (elite ? 1.8 : 1), speed: defaults[1] * (1 + g.stage * .12) * (elite ? 1.15 : 1), radius: defaults[2],
@@ -58,6 +61,15 @@ export function spawnEnemy(g, kind, position, elite = false) {
 }
 function hit(g, e, damage, color, attackType) {
   if (e.hp <= 0) return;
+  if (e.supply) {
+    e.hp -= damage;
+    if (e.hp <= 0) {
+      e.broken = true;
+      for (let i = 0; i < 3; i++) g.drops.push({ x: e.x + (i - 1) * .35, z: e.z, kind: 'xp', value: 1, phase: i * 2 });
+      g.fx.push({ kind: 'burst', x: e.x, z: e.z, color: '#85dcff', radius: 1.2, life: .4, maxLife: .4 }); event(g, 'supply-broken');
+    }
+    return;
+  }
   const multiplier = effectiveness(attackType, e.types);
   const critical = multiplier > 0 && g.rng() < g.stats.critChance;
   const amount = Math.round(damage * multiplier * (critical ? g.stats.critMultiplier : 1));
@@ -79,15 +91,15 @@ function hit(g, e, damage, color, attackType) {
 function attack(g, move) {
   const data = MOVES[move.id], p = g.player;
   const range = data.range * (1 + (move.level - 1) * .08);
-  const targets = g.enemies.filter(e => e.hp > 0 && distance(e, p) < range).sort((a, b) => effectiveness(data.type, b.types) - effectiveness(data.type, a.types) || distance(a, p) - distance(b, p));
+  const targets = [...g.enemies, ...g.pokeballs].filter(e => e.hp > 0 && distance(e, p) < range).sort((a, b) => Number(!!a.supply) - Number(!!b.supply) || effectiveness(data.type, b.types) - effectiveness(data.type, a.types) || distance(a, p) - distance(b, p));
   if (!targets.length) return false;
   const damage = data.damage * g.stats.damage * (1 + (move.level - 1) * .32) * (g.evolved ? 1.25 : 1);
-  if (['vine', 'psychic', 'sand'].includes(move.id)) {
+  if (['vine', 'psychic', 'sand', 'bite'].includes(move.id)) {
     for (const e of targets) hit(g, e, damage, data.color, data.type);
     g.fx.push({ kind: 'ring', x: p.x, z: p.z, radius: range, color: data.color, life: .35, maxLife: .35 });
   } else if (move.id === 'thunder') {
     let from = p;
-    for (const e of targets.slice(0, Math.min(6, 2 + move.level + g.stats.projectiles - 1))) {
+    for (const e of targets.slice(0, Math.min(6, move.level + g.stats.projectiles))) {
       hit(g, e, damage, data.color, data.type);
       g.fx.push({ kind: 'line', x: from.x, z: from.z, tx: e.x, tz: e.z, color: data.color, life: .22, maxLife: .22 }); from = e;
     }
@@ -113,7 +125,7 @@ function recommendCounter(g, pool) {
     for (const enemy of threats) {
       const multiplier = effectiveness(move.type, enemy.types);
       const current = Math.max(...g.moves.map(m => effectiveness(MOVES[m.id].type, enemy.types)), 0);
-      const improvement = Math.max(0, multiplier - current) * (enemy.boss ? 3 : 1);
+      const improvement = Math.max(0, multiplier - current) * (current === 0 ? 3 : 1) * (enemy.boss ? 3 : 1);
       if (multiplier > 1) score += improvement;
       if (improvement > 0 && multiplier > 1 && (!strongest || multiplier > strongest.multiplier)) strongest = { kind: enemy.kind, multiplier };
     }
@@ -154,7 +166,7 @@ function checkLevel(g) {
     g.xp -= g.xpNext; g.level++; g.xpNext = Math.floor(7 + g.level * 3.5); g.upgradeSource = 'level';
     g.player.hp = Math.min(g.player.maxHp, g.player.hp + 8);
     if (g.level >= 8 && !g.evolved) {
-      g.evolved = true; g.player.maxHp += 25; g.player.hp = g.player.maxHp;
+      g.evolved = true; g.player.types = [...SPECIES_TYPES[STARTERS[g.starter].evolved.toLowerCase()]]; g.player.maxHp += 25; g.player.hp = g.player.maxHp;
       notice(g, `${STARTERS[g.starter].evolved.toUpperCase()}! EVOLUTION!`, 4);
       event(g, 'evolved');
     }
@@ -195,6 +207,8 @@ export function step(g, input = {}, dt = 1 / 60) {
   if (g.status !== 'playing') return;
   dt = Math.max(0, Math.min(dt, .05));
   const p = g.player;
+  const previousPosition = { x: p.x, z: p.z };
+  const depth = waterDepth(p.x, p.z), swimming = depth > .3 && p.y < depth + .2;
   g.time += dt; g.stageTime += dt; g.wave = Math.min(6, 1 + Math.floor(g.stageTime / 30));
   g.noticeTime = Math.max(0, g.noticeTime - dt);
   p.invulnerable = Math.max(0, p.invulnerable - dt); p.dashCooldown = Math.max(0, p.dashCooldown - dt);
@@ -220,14 +234,17 @@ export function step(g, input = {}, dt = 1 / 60) {
       if (speed > .2) p.angle = Math.atan2(p.slideX, p.slideZ);
     } else {
       p.slideX = mx * p.speed; p.slideZ = mz * p.speed;
-      p.x += mx * p.speed * dt; p.z += mz * p.speed * dt;
+      p.x += mx * p.speed * dt * (swimming ? .65 : 1); p.z += mz * p.speed * dt * (swimming ? .65 : 1);
     }
   }
   if (magnitude && !p.sliding) p.angle = Math.atan2(mx, mz);
-  avoidBuildings(p, .5);
+  moveWithCollisions(p, previousPosition, .5);
   const worldDistance = Math.hypot(p.x, p.z);
   if (worldDistance > ARENA_RADIUS) { p.x *= ARENA_RADIUS / worldDistance; p.z *= ARENA_RADIUS / worldDistance; }
   p.vy -= 24 * dt; p.y = Math.max(0, p.y + p.vy * dt); if (p.y === 0) p.vy = 0;
+  const finalDepth = waterDepth(p.x, p.z);
+  if (finalDepth > .3 && p.y < finalDepth - .25) { p.y = finalDepth - .25; p.vy = 0; }
+  if (swimming && p.dash <= 0) p.z += dt * 1.1;
   if (input.interact) {
     const chest = g.chests.find(c => !c.opened && distance(c, p) < 3);
     if (chest && g.gold >= 15) { chest.opened = true; g.gold -= 15; g.upgradeSource = 'chest'; makeChoices(g); event(g, 'chest-opened'); return; }
@@ -260,14 +277,15 @@ export function step(g, input = {}, dt = 1 / 60) {
   }
   for (const e of g.enemies) {
     if (e.hp <= 0) continue;
+    const oldPosition = { x: e.x, z: e.z };
     e.hit = Math.max(0, e.hit - dt);
     const dx = p.x - e.x, dz = p.z - e.z, dist = Math.hypot(dx, dz) || 1;
     e.angle = Math.atan2(dx, dz);
     const lunge = ['zubat', 'sandslash'].includes(e.kind) && Math.sin(g.time * 1.8 + e.phase) > .85 ? 2.1 : 1;
     if (dist > e.radius + .35) { e.x += dx / dist * e.speed * lunge * dt; e.z += dz / dist * e.speed * lunge * dt; }
-    avoidBuildings(e, e.radius);
+    moveWithCollisions(e, oldPosition, e.radius);
     if (dist < e.radius + .55) damagePlayer(g, e.boss ? 22 : e.elite ? 15 : 10);
-    if (!e.boss && e.kind === 'geodude' && g.stageTime > 35 && dist < 18) {
+    if (!e.boss && ['geodude', 'graveler', 'golem'].includes(e.kind) && g.stageTime > 35 && dist < 18) {
       e.attackTimer -= dt;
       if (e.attackTimer <= 0) {
         g.bullets.push({ x: e.x, z: e.z, vx: dx / dist * 7, vz: dz / dist * 7, radius: .36, life: 3, type: 'ROCK', color: '#d3bc83', damage: 12, enemy: true });
@@ -296,7 +314,7 @@ export function step(g, input = {}, dt = 1 / 60) {
     if (b.enemy) {
       if (segmentDistance(p.x, p.z, oldX, oldZ, b.x, b.z) < b.radius + .5) { damagePlayer(g, b.damage, b.type); b.life = 0; }
     } else {
-      for (const e of g.enemies) {
+      for (const e of [...g.enemies, ...g.pokeballs]) {
         if (e.hp <= 0 || b.hitIds.has(e.id)) continue;
         if (segmentDistance(e.x, e.z, oldX, oldZ, b.x, b.z) < e.radius + b.radius) {
           hit(g, e, b.damage, b.color, b.type); if (!b.hitIds.size) g.combat.shotsHit++; b.hitIds.add(e.id); b.pierce--;

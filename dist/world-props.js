@@ -1,4 +1,14 @@
-import { groundHeight } from './terrain.js?v=4';
+import { groundHeight } from './terrain.js?v=11';
+
+export function buildPokeball(T, material) {
+  const root = new T.Group();
+  const top = new T.Mesh(new T.SphereGeometry(.42, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), material('#df615b'));
+  const bottom = new T.Mesh(new T.SphereGeometry(.42, 12, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), material('#f1eee1'));
+  const band = new T.Mesh(new T.TorusGeometry(.42, .035, 4, 12), material('#27333b')); band.rotation.x = Math.PI / 2;
+  const button = new T.Mesh(new T.CylinderGeometry(.11, .11, .07, 8), material('#f1eee1')); button.rotation.x = Math.PI / 2; button.position.z = .42;
+  root.add(top, bottom, band, button); root.traverse(node => { if (node.isMesh) node.castShadow = true; });
+  return root;
+}
 
 export function buildChest(T, material) {
   const root = new T.Group(), lid = new T.Group();

@@ -2,15 +2,17 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { safeCameraHeight } from './camera-motion.js?v=10';
-import { buildRegion } from './regions.js?v=10';
-import { LEVELS } from './levels.js?v=10';
-import { groundHeight } from './terrain.js?v=4';
-import { buildChest, buildShrine, buildPortal } from './world-props.js?v=4';
-import { MODELS, EVOLUTIONS, modelURL } from './models.js';
-import { seededRandom } from './engine.js?v=8';
-import { paintOverlay } from './overlay.js?v=7';
-import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js';
+import { safeCameraPosition } from './camera-motion.js?v=11';
+import { SCENERY } from './obstacles.js?v=11';
+import { buildRegion } from './regions.js?v=11';
+import { LEVELS } from './levels.js?v=11';
+import { RiverWaves } from './water.js?v=11';
+import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=11';
+import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=11';
+import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=11';
+import { seededRandom } from './engine.js?v=11';
+import { paintOverlay } from './overlay.js?v=11';
+import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=11';
 
 const TAU = Math.PI * 2;
 const _vector = new THREE.Vector3();
@@ -40,7 +42,7 @@ export class Renderer {
     this.toonRamp = new THREE.DataTexture(new Uint8Array([65, 165, 255]), 3, 1, THREE.RedFormat);
     this.toonRamp.minFilter = this.toonRamp.magFilter = THREE.NearestFilter; this.toonRamp.generateMipmaps = false; this.toonRamp.needsUpdate = true;
     this.outlineMaterial = this.makeOutlineMaterial();
-    this.materialCache = new Map(); this.buildWorld(); this.buildPools();
+    this.materialCache = new Map(); this.windShaders = []; this.buildWorld(); this.buildPools();
     this.localAssets = fetch('assets/manifest.json').then(r => r.ok ? r.json() : null).catch(() => null);
     canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); this.onAssetStatus({ status: 'renderer-error', error: 'The GPU connection was lost. Reload the page to restore the scene.' }); });
   }
@@ -93,8 +95,8 @@ export class Renderer {
     this.makeGrass(rng); this.makeFlowers(rng);
     // Layered foliage, branching trunks, and varied silhouettes frame the arena.
     const trunk = new THREE.CylinderGeometry(.17, .32, 3.3, 7), crown = new THREE.IcosahedronGeometry(1, 1);
-    for (let i = 0; i < 100; i++) {
-      const a = rng() * TAU, r = 17 + rng() * 96, x = Math.cos(a) * r, z = Math.sin(a) * r, s = .8 + rng() * .85;
+    for (const tree of SCENERY.trees) {
+      const { x, z, size: s } = tree;
       const base = groundHeight(x, z);
       this.mesh(trunk, '#81634a', x, base + 1.65 * s, z, s);
       const branch = this.mesh(trunk, '#81634a', x + .55 * s, base + 2.55 * s, z, s * .42, s * .5, s * .42); branch.rotation.z = -.8;
@@ -102,11 +104,19 @@ export class Renderer {
       for (let j = 0; j < crowns.length; j++) {
         const [dx, dy, dz, size] = crowns[j]; const leaf = this.mesh(crown, ['#527b47', '#789852', '#7fa15a', '#99b56c'][j], x + dx * s, base + dy * s, z + dz * s, size * s, size * s * .8, size * s);
         leaf.rotation.set(rng(), rng() * TAU, rng());
+        if (!leaf.material.userData.wind) {
+          leaf.material.userData.wind = true;
+          leaf.material.onBeforeCompile = shader => {
+            shader.uniforms.uCanopyTime = { value: 0 }; this.windShaders.push(shader);
+            shader.vertexShader = 'uniform float uCanopyTime;\n' + shader.vertexShader;
+            shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed.x += sin(uCanopyTime*.85 + modelMatrix[3].x*.08 + modelMatrix[3].z*.05) * max(0.0, position.y+.9) * .035;');
+          };
+        }
       }
     }
     const stone = new THREE.IcosahedronGeometry(1, 1);
-    for (let i = 0; i < 75; i++) {
-      const a = rng() * TAU, r = 18 + rng() * 95, x = Math.sin(a) * r, z = Math.cos(a) * r, size = .45 + rng() * 1.6;
+    for (let i = 0; i < SCENERY.rocks.length; i++) {
+      const { x, z, size } = SCENERY.rocks[i];
       const rock = this.mesh(stone, i % 3 ? '#89988a' : '#a3ab96', x, groundHeight(x, z) + size * .35, z, size, size * .65, size * .8); rock.rotation.set(.2, rng() * TAU, .15);
       if (i % 3 === 0) this.mesh(stone, '#829455', x + .1, groundHeight(x, z) + size * .7, z, size * .6, size * .17, size * .7, false);
     }
@@ -127,19 +137,22 @@ export class Renderer {
       this.mesh(this.geometry.box, '#c3c29c', x, groundHeight(x, 12) + 2.78, 12, .92, .18, .92);
       this.mesh(this.geometry.ball, '#f9d99b', x, groundHeight(x, 12) + 3, 12, .2, .24, .2, false, { emissive: '#ffb64b', emissiveIntensity: .4 });
     }
-    const stream = new THREE.PlaneGeometry(8, 96, 10, 50); stream.rotateX(-Math.PI / 2);
-    for (let i = 0; i < stream.attributes.position.count; i++) { const z = stream.attributes.position.getZ(i); const x = stream.attributes.position.getX(i) + 33 + Math.sin(z * .09) * 2; stream.attributes.position.setX(i, x); stream.attributes.position.setY(i, groundHeight(x, z) + .12); }
+    const stream = new THREE.PlaneGeometry(7.2, 260, 8, 160); stream.rotateX(-Math.PI / 2);
+    for (let i = 0; i < stream.attributes.position.count; i++) { const z = stream.attributes.position.getZ(i); stream.attributes.position.setX(i, stream.attributes.position.getX(i) + riverCenter(z)); stream.attributes.position.setY(i, WATER_LEVEL); }
     stream.computeVertexNormals();
-    this.water = new THREE.Mesh(stream, new THREE.MeshStandardMaterial({ color: '#6fb9bb', roughness: .2, metalness: .18, transparent: true, opacity: .82 })); this.water.position.y = -.015; this.water.receiveShadow = true; this.scene.add(this.water);
-    this.ripples = [];
-    for (let i = 0; i < 14; i++) { const z = i * 6 - 39; const ripple = new THREE.Mesh(new THREE.PlaneGeometry(2.1, .08), new THREE.MeshBasicMaterial({ color: '#e1f4e3', transparent: true, opacity: .5, depthWrite: false })); ripple.rotation.x = -Math.PI / 2; ripple.position.set(33 + Math.sin(z * .09) * 2, groundHeight(33 + Math.sin(z * .09) * 2, z) + .15, z); this.scene.add(ripple); this.ripples.push(ripple); }
+    const waterCanvas = document.createElement('canvas'); waterCanvas.width = waterCanvas.height = 32;
+    const waterCtx = waterCanvas.getContext('2d'); waterCtx.fillStyle = '#89c7d2'; waterCtx.fillRect(0, 0, 32, 32);
+    for (let i = 0; i < 12; i++) { waterCtx.fillStyle = i % 3 ? '#a8e2e4' : '#d8f4e7'; waterCtx.fillRect((i * 7) % 28, (i * 11) % 28, 5, 1); }
+    const waterTexture = new THREE.CanvasTexture(waterCanvas); waterTexture.minFilter = waterTexture.magFilter = THREE.NearestFilter; waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping; waterTexture.repeat.set(2, 52);
+    this.water = new THREE.Mesh(stream, new THREE.MeshPhysicalMaterial({ color: '#5ca7c1', map: waterTexture, roughness: .18, metalness: .12, transparent: true, opacity: .86, envMapIntensity: .75 })); this.water.receiveShadow = true; this.scene.add(this.water);
+    this.riverWaves = new RiverWaves(); this.waterTexture = waterTexture; this.ripples = [];
     // A separate presentation platform keeps the title character unobstructed.
     this.podium = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.16, .24, 64), this.material('#c4bca3')); base.receiveShadow = true;
     const top = new THREE.Mesh(new THREE.CylinderGeometry(1.84, 1.84, .05, 64), this.material('#718a57')); top.position.y = .145; top.receiveShadow = true;
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.93, .028, 6, 80), this.material('#e3dba9')); ring.rotation.x = Math.PI / 2; ring.position.y = .13;
     this.podium.add(base, top, ring); this.podium.position.set(3.2, .15, 0); this.scene.add(this.podium);
-    this.chests = []; this.shrines = [];
+    this.chests = []; this.shrines = []; this.supplies = [];
     this.region = buildRegion(THREE, color => this.material(color), groundHeight); this.scene.add(this.region);
     this.portal = buildPortal(THREE); this.scene.add(this.portal.root);
   }
@@ -249,7 +262,7 @@ export class Renderer {
   }
   async warmArena() {
     // Parse large nonessential models sequentially to limit startup memory peaks.
-    for (const kind of ['gastly', 'geodude', 'zubat', 'pidgey', 'sandshrew', 'sandslash', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
+    for (const kind of ['gastly', 'geodude', 'graveler', 'golem', 'zubat', 'pidgey', 'sandshrew', 'sandslash', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
   }
   makeActor(kind, key) {
     const asset = this.assets.get(kind); if (!asset) { if (!this.errors.has(kind)) this.requestModel(kind).catch(() => {}); return null; }
@@ -293,7 +306,12 @@ export class Renderer {
     actor.root.position.set(x, y, z); actor.root.rotation.y = angle + MODELS[kind].faceYaw; actor.root.scale.setScalar(scale); actor.root.visible = visible;
     for (const mesh of actor.meshes) mesh.castShadow = shadow;
     for (const outline of actor.outlines) outline.visible = shadow || key === 'player';
-    this.playActor(actor, moving ? 'run' : 'idle'); actor.mixer.update(dt);
+    this.playActor(actor, kind === 'pidgey' ? 'idle' : moving ? 'run' : 'idle'); actor.mixer.update(dt);
+    if (kind === 'pidgey') {
+      actor.flightTime = (actor.flightTime ?? 0) + dt;
+      actor.flightBones ??= actor.model.children.length ? ['LArm', 'RArm'].map(name => { const bone = actor.model.getObjectByName(name); return bone ? { bone, rest: bone.quaternion.clone(), side: name[0] === 'L' ? 1 : -1 } : null; }).filter(Boolean) : [];
+      for (const { bone, rest, side } of actor.flightBones) { bone.quaternion.copy(rest); bone.rotateZ(side * (.65 + Math.sin(actor.flightTime * 16) * .6)); }
+    }
     finishAnimationFade(actor, dt);
     for (const { material, color } of actor.materials) if (color) material.color.copy(color).lerp(_white, hit ? .72 : 0);
     return actor;
@@ -338,6 +356,12 @@ export class Renderer {
       prop.beam.material.opacity = shrine.active ? .15 + shrine.charge * .25 : .08;
     });
   }
+  updateSupplies(g, time) {
+    if (!this.supplies.length) for (const ball of g.pokeballs) {
+      const root = buildPokeball(THREE, color => this.material(color)); root.position.set(ball.x, groundHeight(ball.x, ball.z) + .48, ball.z); this.scene.add(root); this.supplies.push({ root });
+    }
+    g.pokeballs.forEach((ball, i) => { const root = this.supplies[i].root; root.visible = !ball.broken; root.rotation.y = time * .35; });
+  }
   updateDrops(g, time) {
     let count = 0;
     for (const drop of g.drops) {
@@ -363,8 +387,12 @@ export class Renderer {
       this.currentStage = g.stage; const theme = LEVELS[g.stage];
       this.scene.background.set(theme.sky); this.scene.fog.color.set(theme.sky);
       this.terrain.material.color.set(theme.ground); this.grass.material.color.set(theme.grass);
-      for (const prop of [...this.chests, ...this.shrines]) this.scene.remove(prop.root);
-      this.chests = []; this.shrines = [];
+      for (const prop of [...this.chests, ...this.shrines, ...this.supplies]) {
+        this.scene.remove(prop.root);
+        const shared = new Set(this.materialCache.values());
+        prop.root.traverse(node => { if (!node.isMesh) return; node.geometry.dispose(); for (const mat of Array.isArray(node.material) ? node.material : [node.material]) if (!shared.has(mat)) mat.dispose(); });
+      }
+      this.chests = []; this.shrines = []; this.supplies = [];
     }
     const p = g.player, elapsed = Math.min(.05, this.lastTime === null ? .016 : Math.max(0, time - this.lastTime)); this.lastTime = time;
     const entering = g.status === 'intro', intro = Math.min(1, (g.introTime || 0) / 2.8);
@@ -376,12 +404,21 @@ export class Renderer {
     const cameraZ = this.camera.z + Math.cos(yaw) * (lobby ? 12 * Math.cos(pitch) : radius * Math.cos(pitch));
     const target = { x: this.camera.x, y: lobby ? 1.6 : 1 + Math.max(this.cameraHeight, groundHeight(this.camera.x, this.camera.z)), z: this.camera.z };
     const candidate = { x: cameraX, y: lobby ? 1.6 + 12 * Math.sin(pitch) : this.cameraHeight + 1 + radius * Math.sin(pitch), z: cameraZ };
-    this.view.position.set(cameraX, lobby ? candidate.y : safeCameraHeight(target, candidate), cameraZ);
+    const cameraPosition = lobby ? candidate : safeCameraPosition(target, candidate);
+    this.view.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     this.view.lookAt(target.x, target.y, target.z); this.view.updateMatrixWorld();
     this.sun.position.set(p.x - 22, 35, p.z + 20); this.sun.target.position.set(p.x, 0, p.z); this.sun.target.updateMatrixWorld();
-    this.podium.visible = lobby; if (this.grassShader) this.grassShader.uniforms.uWindTime.value = time;
+    this.podium.visible = lobby; for (const shader of this.windShaders) shader.uniforms.uCanopyTime.value = time; if (this.grassShader) this.grassShader.uniforms.uWindTime.value = time;
     for (let i = 0; i < this.ripples.length; i++) this.ripples[i].material.opacity = .25 + (Math.sin(time * 1.5 + i) + 1) * .12;
-    this.updateChests(g.chests, dt); this.updateShrines(g.shrines, time); this.updateDrops(g, time);
+    if (dt > 0) {
+      const previous = this.actorMap.get('player');
+      if (waterDepth(p.x, p.z) > .2 && previous && Math.hypot(p.x - (previous.previousX ?? p.x), p.z - (previous.previousZ ?? p.z)) > .005) this.riverWaves.disturb((p.x - riverCenter(p.z) + 3.6) / 7.2 * 8, (130 - p.z) / 260 * 160, .05);
+      this.riverWaves.update(dt); this.waterTexture.offset.y -= dt * .11;
+      const positions = this.water.geometry.attributes.position;
+      for (let i = 0; i < positions.count; i++) positions.setY(i, WATER_LEVEL + this.riverWaves.heights[i] + Math.sin(time * 1.9 + positions.getZ(i) * .2) * .015);
+      positions.needsUpdate = true; this.water.geometry.computeVertexNormals();
+    }
+    this.updateSupplies(g, time); this.updateChests(g.chests, dt); this.updateShrines(g.shrines, time); this.updateDrops(g, time);
     this.portal.root.visible = entering;
     if (entering) {
       const size = Math.min(1, intro * 6) * Math.min(1, (1 - intro) * 5);
@@ -404,7 +441,7 @@ export class Renderer {
     if (!lobby) for (const enemy of g.enemies) {
       const dist = Math.hypot(enemy.x - p.x, enemy.z - p.z); if (dist > 40) continue;
       const key = 'enemy:' + enemy.id; active.add(key);
-      this.actor(enemy.kind, key, enemy.x, groundHeight(enemy.x, enemy.z) + (['gastly', 'zubat'].includes(enemy.kind) ? .55 + Math.sin(time * 2 + enemy.phase) * .1 : 0), enemy.z, enemy.angle,
+      this.actor(enemy.kind, key, enemy.x, groundHeight(enemy.x, enemy.z) + (['gastly', 'zubat', 'pidgey'].includes(enemy.kind) ? .55 + Math.sin(time * 2 + enemy.phase) * .1 : 0), enemy.z, enemy.angle,
         enemy.elite ? 1.2 : 1, dt, true, enemy.hit > 0, true, dist < 19);
     }
     for (const key of this.actorMap.keys()) if (!active.has(key)) this.removeActor(key);

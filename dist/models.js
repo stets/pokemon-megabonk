@@ -12,6 +12,8 @@ export const MODELS = {
   wartortle: { id: '008', height: 1.95, faceYaw: 0 },
   gastly: { id: '092', height: 1.8, faceYaw: 0 },
   geodude: { id: '074', height: 1.6, faceYaw: 0 },
+  graveler: { id: '075', height: 2.15, faceYaw: 0 },
+  golem: { id: '076', height: 2.8, faceYaw: 0 },
   zubat: { id: '041', height: 1.5, faceYaw: 0 },
   pidgey: { id: '016', height: 1.4, faceYaw: 0 },
   gengar: { id: '094', height: 2.8, faceYaw: 0 },
