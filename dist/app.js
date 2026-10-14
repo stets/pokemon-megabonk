@@ -1,11 +1,11 @@
-import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=12';
-import { easeCamera, turnCamera } from './camera-motion.js?v=12';
-import { loadSettings, saveSettings } from './settings.js?v=12';
-import { BUILDINGS } from './regions.js?v=12';
-import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=12';
-import { ControllerInput } from './controller.js?v=12';
-import { GameAudio } from './audio.js?v=12';
-import { EVOLUTIONS } from './models.js?v=12';
+import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=13';
+import { easeCamera, turnCamera } from './camera-motion.js?v=13';
+import { loadSettings, saveSettings } from './settings.js?v=13';
+import { BUILDINGS } from './regions.js?v=13';
+import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=13';
+import { ControllerInput } from './controller.js?v=13';
+import { GameAudio } from './audio.js?v=13';
+import { EVOLUTIONS } from './models.js?v=13';
 
 const $ = id => document.getElementById(id);
 const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
@@ -387,7 +387,7 @@ function frame(time) {
 }
 buildStarters(); game.status = 'lobby';
 try {
-  const { Renderer } = await import('./renderer.js?v=12');
+  const { Renderer } = await import('./renderer.js?v=13');
   renderer = new Renderer($('world'), $('effects'), updateAssetStatus);
   updateAssetStatus();
   for (const kind of ['pikachu', 'gastly', 'geodude']) renderer.prepare(kind).catch(() => {});

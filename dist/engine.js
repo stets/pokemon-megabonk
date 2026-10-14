@@ -1,10 +1,10 @@
-import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=12';
-export { ARENA_RADIUS } from './terrain.js?v=12';
-import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=12';
-import { avoidBuildings } from './regions.js?v=12';
-import { moveWithCollisions } from './obstacles.js?v=12';
-import { LEVELS, levelObjects } from './levels.js?v=12';
-export { LEVELS } from './levels.js?v=12';
+import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=13';
+export { ARENA_RADIUS } from './terrain.js?v=13';
+import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=13';
+import { avoidBuildings } from './regions.js?v=13';
+import { moveWithCollisions } from './obstacles.js?v=13';
+import { LEVELS, levelObjects } from './levels.js?v=13';
+export { LEVELS } from './levels.js?v=13';
 
 export const STARTERS = {
   pikachu: { name: 'Pikachu', evolved: 'Raichu', type: 'ELECTRIC', color: '#ffda4a', move: 'thunder', speed: 8.2, hp: 90, description: 'Chain lightning. Fast feet. Absolute chaos.' },
@@ -92,7 +92,15 @@ function hit(g, e, damage, color, attackType) {
 function attack(g, move) {
   const data = MOVES[move.id], p = g.player;
   const range = data.range * (1 + (move.level - 1) * .08);
-  const targets = [...g.enemies, ...g.pokeballs].filter(e => e.hp > 0 && distance(e, p) < range).sort((a, b) => Number(!!a.supply) - Number(!!b.supply) || effectiveness(data.type, b.types) - effectiveness(data.type, a.types) || distance(a, p) - distance(b, p));
+  const targets = [...g.enemies, ...g.pokeballs].filter(e => e.hp > 0 && distance(e, p) < range).sort((a, b) => {
+    const aMatch = effectiveness(data.type, a.types), bMatch = effectiveness(data.type, b.types);
+    // A region boss must not be starved forever by newly spawned 4×-weak mobs.
+    // Keep supplies last and use another move when the boss is immune.
+    return Number(!!a.supply) - Number(!!b.supply)
+      || Number(aMatch === 0) - Number(bMatch === 0)
+      || Number(b.id === g.stageBossId) - Number(a.id === g.stageBossId)
+      || bMatch - aMatch || distance(a, p) - distance(b, p);
+  });
   if (!targets.length) return false;
   const damage = data.damage * g.stats.damage * (1 + (move.level - 1) * .32) * (g.evolved ? 1.25 : 1);
   if (['vine', 'psychic', 'sand', 'bite'].includes(move.id)) {

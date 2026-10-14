@@ -59,3 +59,18 @@ test('level-up generation guarantees a useful counter when one fits the build', 
   assert.equal(applyUpgrade(g, choice.id), true);
   assert.ok(g.moves.some(m => m.id === choice.id.slice(5)));
 });
+
+
+test('a vulnerable region boss receives attacks even while 4x-weak enemies keep spawning', () => {
+  const g=createGame('squirtle');g.spawnTimer=1e6;g.moves[0].cooldown=0;
+  spawnEnemy(g,'geodude',{x:3,z:0}).speed=0;
+  const boss=spawnEnemy(g,'gengar',{x:-7,z:0});boss.speed=0;g.stageBossId=boss.id;
+  step(g);assert.ok(g.bullets[0].vx<0);
+});
+
+test('region boss priority never diverts an attack from a vulnerable enemy to an immune boss', () => {
+  const g=createGame('eevee');g.spawnTimer=1e6;g.moves=[{id:'swift',level:1,cooldown:0}];
+  spawnEnemy(g,'pidgey',{x:5,z:0}).speed=0;
+  const boss=spawnEnemy(g,'gengar',{x:-3,z:0});boss.speed=0;g.stageBossId=boss.id;
+  step(g);assert.ok(g.bullets[0].vx>0);
+});

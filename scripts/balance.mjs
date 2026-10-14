@@ -1,12 +1,15 @@
 import { writeFileSync } from 'node:fs';
-import { createGame, step, applyUpgrade, STARTERS, distance, MOVES } from '../dist/engine.js';
+import { createGame, step, applyUpgrade, STARTERS, distance, advanceStage } from '../dist/engine.js';
+const campaign=process.argv.includes('--campaign');
+const duration=campaign?900:180;
 const results=[];
 const seeds=[19,81,123,4721,65191,91277];
 for(const starter of Object.keys(STARTERS)) {
   const runs=[];
   for(const seed of seeds) {
-    const g=createGame(starter,seed);
-    for(let frame=0;frame<180*30 && !['dead','stage-clear','won'].includes(g.status);frame++) {
+    const g=createGame(starter,seed), clears=[];
+    for(let frame=0;frame<duration*30 && !['dead','won',...(campaign?[]:['stage-clear'])].includes(g.status);frame++) {
+      if(g.status==='stage-clear'){clears.push({stage:g.stage,time:Math.round(g.time),hp:Math.round(g.player.hp),level:g.level});advanceStage(g);}
       if(g.status==='upgrade'){
         const choice=g.choices.find(c=>c.matchup) ?? g.choices.find(c=>c.id.startsWith('move:')) ?? g.choices.find(c=>['damage','haste','crit-chance'].includes(c.id)) ?? g.choices[0];
         applyUpgrade(g,choice.id);
@@ -19,10 +22,10 @@ for(const starter of Object.keys(STARTERS)) {
       const length=Math.hypot(x,z)||1;
       step(g,{x:x/length,z:z/length,dash:g.enemies.some(e=>distance(e,g.player)<2.5)&&g.player.dashCooldown===0},1/30);
     }
-    runs.push({seed,time:Math.round(g.time),kills:g.kills,level:g.level,status:g.status,damage:g.combat.damageDealt});
+    runs.push({seed,time:Math.round(g.time),kills:g.kills,level:g.level,status:g.status==='playing'&&g.time>=duration-.1?'timeout':g.status,damage:Math.round(g.combat.damageDealt),stage:g.stage,hp:Math.round(g.player.hp),clears,moves:g.moves.map(m=>({id:m.id,level:m.level}))});
   }
   const median=key=>runs.map(r=>r[key]).sort((a,b)=>a-b)[Math.floor(runs.length/2)];
-  const row={starter,survival:median('time'),kills:median('kills'),level:median('level'),runs}; results.push(row);
-  console.log(`${starter.padEnd(10)} survival=${row.survival}s kills=${row.kills} level=${row.level}`);
+  const row={starter,survival:median('time'),kills:median('kills'),level:median('level'),wins:runs.filter(r=>r.status==='won').length,clears:runs.reduce((sum,r)=>sum+r.clears.length,0),runs}; results.push(row);
+  console.log(`${starter.padEnd(10)} survival=${row.survival}s kills=${row.kills} level=${row.level} wins=${row.wins}/${seeds.length} clears=${row.clears}`);
 }
-writeFileSync(new URL('../balance-results.json',import.meta.url),JSON.stringify({scenario:'six seeded, first-area avoidance runs with counter-first upgrades; directional AI is not a human playtest',results},null,2)+'\n');
+writeFileSync(new URL(campaign?'../campaign-balance-results.json':'../balance-results.json',import.meta.url),JSON.stringify({ruleset:'Region-boss priority with immunity avoidance',scenario:`six seeded, ${campaign?'full-campaign (900s limit)':'first-area (180s limit)'} avoidance runs with counter-first upgrades; directional AI is not a human playtest`,results},null,2)+'\n');

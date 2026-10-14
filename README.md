@@ -25,7 +25,7 @@ The game uses the browser Gamepad API. Keyboard, mouse and touch remain supporte
 
 ## Combat and exploration
 
-The modern 18-type chart supplies weaknesses, resistances and immunities, including dual-type multipliers. Electric cannot hurt Rock/Ground Geodude; Water and Grass deal 4× damage to it. Auto-targeting prefers vulnerable enemies, and upgrade choices favor counters that improve coverage, with extra priority for overcoming immunities. Abilities such as Levitate and same-type attack bonuses are not modeled.
+The modern 18-type chart supplies weaknesses, resistances and immunities, including dual-type multipliers. Electric cannot hurt Rock/Ground Geodude; Water and Grass deal 4× damage to it. Auto-targeting gives the region boss priority when a move can damage it, then prefers vulnerable enemies; upgrade choices favor counters that improve coverage, with extra priority for overcoming immunities. Abilities such as Levitate and same-type attack bonuses are not modeled.
 
 Eevee starts with Swift and a weaker close-range Bite so Ghost immunity does not strand its opening build. Crits start at 12% chance and 1.7× damage. Scope Lens increases chance to a 50% cap; Razor Claw increases the multiplier to a 3× cap. Crit, resistance and immunity feedback are distinct. Pause statistics track actual projectile misses separately from immune hits; there is no random accuracy penalty.
 
@@ -49,7 +49,7 @@ The game catches runtime errors and exposes `window.pokebonkCrash`. `window.poke
 
 Run `node --test tests/*.test.mjs` with Node 24. Tests cover combat, type multipliers, immunity, crit caps, supplies, movement/collision, camera settings, hill clearance, controller input, river physics, stage progression, miniboss capture and boss alerts. Browser rendering and interaction checks are separate.
 
-Run `node scripts/balance.mjs` to compare starters across six identical first-area seeds. It writes `balance-results.json` with survival, kills and levels. This is an initial comparison using a directional avoidance bot, not proof that every human strategy or late-game build is balanced.
+Run `node scripts/balance.mjs` to compare starters across six identical first-area seeds. It writes `balance-results.json` with survival, kills and levels. Use `node scripts/balance.mjs --campaign` to run all three areas with a 15-minute limit per seed. It records area clears, final builds, deaths, victories and explicit timeouts in `campaign-balance-results.json`; `campaign-balance-baseline.json` preserves the published v12 targeting comparison. These are comparisons using a directional avoidance bot, not proof that every human strategy or late-game build is balanced. Across the same 48 starter/seed combinations, intermediate area clears increased from 29 to 31 with boss priority, while complete victories decreased from four to two. Focusing a boss trades some horde damage for progression; the results still show starter/build differences that need human playtesting.
 
 ## Publish
 
