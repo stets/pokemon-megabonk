@@ -1,11 +1,11 @@
-import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=14';
-import { easeCamera, turnCamera } from './camera-motion.js?v=14';
-import { loadSettings, saveSettings } from './settings.js?v=14';
-import { buildingsForStage } from './regions.js?v=14';
-import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=14';
-import { ControllerInput } from './controller.js?v=14';
-import { GameAudio } from './audio.js?v=14';
-import { EVOLUTIONS } from './models.js?v=14';
+import { LEVELS, OPENING_ENEMIES, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=15';
+import { easeCamera, turnCamera } from './camera-motion.js?v=15';
+import { loadSettings, saveSettings } from './settings.js?v=15';
+import { buildingsForStage } from './regions.js?v=15';
+import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=15';
+import { ControllerInput } from './controller.js?v=15';
+import { GameAudio } from './audio.js?v=15';
+import { EVOLUTIONS } from './models.js?v=15';
 
 const $ = id => document.getElementById(id);
 const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
@@ -59,12 +59,12 @@ function selectStarter(id) {
 function updateAssetStatus(event) {
   if (event?.status === 'renderer-error') { $('error-message').textContent = event.error; $('error').hidden = false; return; }
   if (!renderer || !lobby) return;
-  const essentials = [selected, 'gastly', 'geodude'];
+  const essentials = [selected, ...OPENING_ENEMIES];
   const failed = essentials.find(kind => renderer.errors.has(kind));
   const ready = essentials.every(kind => renderer.ready(kind));
   $('start').disabled = !ready && !failed;
   $('start').innerHTML = `${failed ? 'RETRY DOWNLOAD' : ready ? 'ENTER THE WILD' : 'PREPARING THE WILD…'} <span>↗</span>`;
-  $('asset-status').textContent = failed ? 'A Pokémon could not load. Check your connection and retry.' : ready ? 'YOUR POKÉMON IS READY.' : `PREPARING THE WILD · ${essentials.filter(kind => renderer.ready(kind)).length} / 3 READY`;
+  $('asset-status').textContent = failed ? 'A Pokémon could not load. Check your connection and retry.' : ready ? 'YOUR POKÉMON IS READY.' : `PREPARING THE WILD · ${essentials.filter(kind => renderer.ready(kind)).length} / ${essentials.length} READY`;
 }
 function clearInput() { dragging = false; held.clear(); pulse = {}; stick = { x: 0, y: 0 }; $('joystick').firstElementChild.style.transform = ''; }
 function captureMouse() {
@@ -77,13 +77,13 @@ function captureMouse() {
 document.addEventListener('pointerlockchange', () => {
   $('look-hint').hidden = document.pointerLockElement === $('world') || lobby;
   if (!document.pointerLockElement && !lobby && game.status === 'intro' && document.hasFocus()) finishIntro();
-  if (!document.pointerLockElement && !lobby && game.status === 'playing' && !controllerActive) pause();
+  if (!document.pointerLockElement && !lobby && ['playing', 'loading'].includes(game.status) && !controllerActive) pause();
 });
 document.addEventListener('pointerlockerror', () => { $('look-hint').hidden = lobby; });
 $('capture-mouse').addEventListener('click', captureMouse);
 function startRun() {
-  if (!renderer || ![selected, 'gastly', 'geodude'].every(kind => renderer.ready(kind))) {
-    if (renderer) for (const kind of [selected, 'gastly', 'geodude']) renderer.prepare(kind).catch(() => {});
+  if (!renderer || ![selected, ...OPENING_ENEMIES].every(kind => renderer.ready(kind))) {
+    if (renderer) for (const kind of [selected, ...OPENING_ENEMIES]) renderer.prepare(kind).catch(() => {});
     updateAssetStatus(); return;
   }
   renderer.warmArena();
@@ -109,7 +109,7 @@ function menu() {
 }
 function pause() {
   if (lobby) return;
-  if (game.status === 'playing') { game.status = 'paused'; $('combat-stats').textContent = `CRIT ${Math.round(game.stats.critChance * 100)}% · ${game.stats.critMultiplier.toFixed(2)}× DAMAGE · ${game.combat.criticalHits} CRITS · ${game.combat.shotsMissed} MISSED SHOTS · ${game.combat.immuneHits} IMMUNE HITS`; clearInput(); $('paused').hidden = false; $('resume').focus(); }
+  if (['playing', 'loading'].includes(game.status)) { game.status = 'paused'; $('combat-stats').textContent = `CRIT ${Math.round(game.stats.critChance * 100)}% · ${game.stats.critMultiplier.toFixed(2)}× DAMAGE · ${game.combat.criticalHits} CRITS · ${game.combat.shotsMissed} MISSED SHOTS · ${game.combat.immuneHits} IMMUNE HITS`; clearInput(); $('paused').hidden = false; $('resume').focus(); }
   else if (game.status === 'paused') { game.status = 'playing'; $('paused').hidden = true; clearInput(); captureMouse(); }
 }
 $('start').addEventListener('click', startRun); $('again').addEventListener('click', startRun); $('change').addEventListener('click', menu);
@@ -332,14 +332,14 @@ function advanceFrame(time) {
       game.introTime += frameElapsed;
       if (game.introTime >= 2.8) finishIntro();
     }
-    if (document.pointerLockElement && game.status !== 'playing' && game.status !== 'intro') document.exitPointerLock();
+    if (document.pointerLockElement && !['playing', 'intro', 'loading'].includes(game.status)) document.exitPointerLock();
     const required = [game.evolved ? EVOLUTIONS[game.starter] : game.starter, ...game.enemies.filter(e => distance(e, game.player) <= 40).map(e => e.kind)];
     const missing = [...new Set(required)].filter(kind => !renderer.ready(kind));
     if (game.status === 'playing' && missing.length) { game.status = 'loading'; assetsPaused = true; clearInput(); }
     if (assetsPaused) {
       const failed = missing.find(kind => renderer.errors.has(kind));
       if (failed) { $('error-message').textContent = `The ${failed} model could not load. Check your connection and reload to retry.`; $('error').hidden = false; }
-      if (!missing.length) { game.status = 'playing'; assetsPaused = false; $('asset-banner').hidden = true; }
+      if (!missing.length) { if (game.status === 'loading') game.status = 'playing'; assetsPaused = false; $('asset-banner').hidden = true; }
       else { $('asset-banner').hidden = false; $('asset-banner').textContent = 'PREPARING THE NEXT ENCOUNTER…'; }
     }
     const horizontal = (held.has('d') || held.has('arrowright') ? 1 : 0) - (held.has('a') || held.has('arrowleft') ? 1 : 0) + stick.x + (pad.connected ? pad.move.x : 0);
@@ -387,10 +387,10 @@ function frame(time) {
 }
 buildStarters(); game.status = 'lobby';
 try {
-  const { Renderer } = await import('./renderer.js?v=14');
+  const { Renderer } = await import('./renderer.js?v=15');
   renderer = new Renderer($('world'), $('effects'), updateAssetStatus);
   updateAssetStatus();
-  for (const kind of ['pikachu', 'gastly', 'geodude']) renderer.prepare(kind).catch(() => {});
+  for (const kind of ['pikachu', ...OPENING_ENEMIES]) renderer.prepare(kind).catch(() => {});
   requestAnimationFrame(frame);
 } catch (error) {
   $('error-message').textContent = `The 3D renderer could not start: ${error.message}`;
@@ -399,4 +399,4 @@ try {
 }
 
 // Small developer hook for inspecting an actual run without affecting normal play.
-window.pokebonk = { get state() { return game; }, get camera() { return { yaw: renderer.yaw, pitch: renderer.pitch, previewYaw: renderer.previewCamera.yaw, previewPitch: renderer.previewCamera.pitch, position: renderer.view.position.toArray() }; }, startRun, pause };
+window.pokebonk = { get state() { return game; }, get assets() { return { ready: [...renderer.assets.keys()], pending: [...renderer.pending.keys()], errors: Object.fromEntries(renderer.errors) }; }, get camera() { return { yaw: renderer.yaw, pitch: renderer.pitch, previewYaw: renderer.previewCamera.yaw, previewPitch: renderer.previewCamera.pitch, position: renderer.view.position.toArray() }; }, startRun, pause };

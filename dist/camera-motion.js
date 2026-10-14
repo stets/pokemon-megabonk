@@ -1,4 +1,4 @@
-import { groundHeight } from './terrain.js?v=14';
+import { groundHeight } from './terrain.js?v=15';
 
 export function safeCameraPosition(target, candidate) {
   let fraction = 1;

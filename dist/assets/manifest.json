@@ -15,16 +15,18 @@
     "037",
     "038",
     "041",
+    "043",
+    "046",
     "054",
     "055",
     "074",
+    "075",
+    "076",
     "092",
     "094",
     "133",
     "134",
-    "150",
-    "075",
-    "076"
+    "150"
   ],
   "reports": {
     "001": {
@@ -222,6 +224,34 @@
         "walk"
       ]
     },
+    "043": {
+      "bytes": 2138116,
+      "sha256": "7a178057d91c194c2cf672420d923e8c04537df865833fcedc37af87f9cb6555",
+      "meshes": 3,
+      "skins": 3,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "046": {
+      "bytes": 793876,
+      "sha256": "b203a514b052eda3eabb898eb1500ceca4f46f8cb0a053304017e3aec9739ffe",
+      "meshes": 3,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
     "054": {
       "bytes": 3747856,
       "sha256": "052ee4ea5f6c013623a6649b2c43ff6fc26960e234d3b8aa160047e3ef6fd70d",
@@ -255,6 +285,34 @@
       "sha256": "71a92bcf9c6823cc0c310413a35e37320e52db171d0fd58aa909fd09bd6b5e30",
       "meshes": 2,
       "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "075": {
+      "bytes": 5694584,
+      "sha256": "8f54ac01878e1aa85162dd763de412acfbf5ef336c018167abb8d36c94378f49",
+      "meshes": 2,
+      "skins": 2,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    "076": {
+      "bytes": 7384708,
+      "sha256": "4fee12e82fd788394e0fd87eb4eecaa9abf053ab27d9f258aed76643f665985a",
+      "meshes": 12,
+      "skins": 7,
       "animations": [
         "attack",
         "happy",
@@ -325,34 +383,6 @@
       "sha256": "f29ed4c0081a5e600543e3ae35476af596418ca3dbcb6bdf9bbfa73f842542b2",
       "meshes": 2,
       "skins": 2,
-      "animations": [
-        "attack",
-        "happy",
-        "idle",
-        "run",
-        "sleep",
-        "walk"
-      ]
-    },
-    "075": {
-      "bytes": 5694584,
-      "sha256": "8f54ac01878e1aa85162dd763de412acfbf5ef336c018167abb8d36c94378f49",
-      "meshes": 2,
-      "skins": 2,
-      "animations": [
-        "attack",
-        "happy",
-        "idle",
-        "run",
-        "sleep",
-        "walk"
-      ]
-    },
-    "076": {
-      "bytes": 7384708,
-      "sha256": "4fee12e82fd788394e0fd87eb4eecaa9abf053ab27d9f258aed76643f665985a",
-      "meshes": 12,
-      "skins": 7,
       "animations": [
         "attack",
         "happy",

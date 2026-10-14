@@ -1,9 +1,9 @@
-import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=14';
-export { ARENA_RADIUS } from './terrain.js?v=14';
-import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=14';
-import { moveWithCollisions } from './obstacles.js?v=14';
-import { LEVELS, levelObjects } from './levels.js?v=14';
-export { LEVELS } from './levels.js?v=14';
+import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=15';
+export { ARENA_RADIUS } from './terrain.js?v=15';
+import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=15';
+import { moveWithCollisions } from './obstacles.js?v=15';
+import { LEVELS, levelObjects, OPENING_ENEMIES } from './levels.js?v=15';
+export { LEVELS, OPENING_ENEMIES } from './levels.js?v=15';
 
 export const STARTERS = {
   pikachu: { name: 'Pikachu', evolved: 'Raichu', type: 'ELECTRIC', color: '#ffda4a', move: 'thunder', speed: 8.2, hp: 90, description: 'Chain lightning. Fast feet. Absolute chaos.' },
@@ -48,10 +48,10 @@ function event(g, name) { g.events.push(name); if (g.events.length > 12) g.event
 function notice(g, message, duration = 2.7) { g.notice = message; g.noticeTime = duration; }
 export function spawnEnemy(g, kind, position, elite = false) {
   const angle = g.rng() * Math.PI * 2, radius = 20 + g.rng() * 7;
-  const baseRoster = g.stage === 0 && g.stageTime < 20 ? ['gastly', 'geodude'] : LEVELS[g.stage].enemies;
+  const baseRoster = g.stage === 0 && g.stageTime < 20 ? OPENING_ENEMIES : LEVELS[g.stage].enemies;
   const roster = [...baseRoster, ...(g.stageTime > 55 || g.stage > 0 ? ['graveler'] : []), ...(g.stageTime > 120 || g.stage > 1 ? ['golem'] : [])];
   const type = kind ?? roster[Math.floor(g.rng() * roster.length)];
-  const defaults = { gastly: [42, 3.4, .65], geodude: [76, 2.2, .85], graveler: [135, 2.5, 1.1], golem: [240, 2.7, 1.35], ranger: [360, 2.9, .75], zubat: [30, 4.8, .58], pidgey: [44, 3.9, .64], gengar: [1000, 2.8, 1.65], mewtwo: [2400, 3.3, 1.8], sandshrew: [58, 3.8, .65], sandslash: [95, 4.1, .85] }[type];
+  const defaults = { oddish: [46, 3, .6], paras: [52, 2.7, .7], gastly: [42, 3.4, .65], geodude: [76, 2.2, .85], graveler: [135, 2.5, 1.1], golem: [240, 2.7, 1.35], ranger: [360, 2.9, .75], zubat: [30, 4.8, .58], pidgey: [44, 3.9, .64], gengar: [1000, 2.8, 1.65], mewtwo: [2400, 3.3, 1.8], sandshrew: [58, 3.8, .65], sandslash: [95, 4.1, .85] }[type];
   const scale = 1 + g.stage * .75 + g.stageTime / 180;
   const e = { id: g.nextId++, kind: type, types: [...SPECIES_TYPES[type]], x: position?.x ?? g.player.x + Math.cos(angle) * radius, z: position?.z ?? g.player.z + Math.sin(angle) * radius,
     hp: defaults[0] * scale * (elite ? 1.8 : 1), maxHp: defaults[0] * scale * (elite ? 1.8 : 1), speed: defaults[1] * (1 + g.stage * .12) * (elite ? 1.15 : 1), radius: defaults[2],

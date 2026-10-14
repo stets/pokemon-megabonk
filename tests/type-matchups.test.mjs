@@ -26,7 +26,7 @@ function encounter(moveId, kind) {
 test('live beam, area and projectile hits apply type multipliers', () => {
   for (const [move, kind, multiplier] of [
     ['thunder', 'pidgey', 2], ['vine', 'geodude', 4], ['vine', 'zubat', .25],
-    ['ember', 'geodude', .5], ['water', 'geodude', 4], ['rock', 'zubat', 2], ['shadow', 'gengar', 2],
+    ['ember', 'geodude', .5], ['ember', 'paras', 4], ['ember', 'oddish', 2], ['water', 'geodude', 4], ['rock', 'zubat', 2], ['shadow', 'gengar', 2],
   ]) {
     const { g, enemy } = encounter(move, kind);
     const amount = Math.round(MOVES[move].damage * multiplier);
@@ -73,4 +73,17 @@ test('region boss priority never diverts an attack from a vulnerable enemy to an
   spawnEnemy(g,'pidgey',{x:5,z:0}).speed=0;
   const boss=spawnEnemy(g,'gengar',{x:-3,z:0});boss.speed=0;g.stageBossId=boss.id;
   step(g);assert.ok(g.bullets[0].vx>0);
+});
+
+
+test('Fire receives a useful counter recommendation against wild grass and bug enemies',()=>{
+  const g=createGame('pikachu');spawnEnemy(g,'paras',{x:4,z:0});
+  makeChoices(g);assert.equal(g.choices[0].id,'move:ember');assert.equal(g.choices[0].matchup,'COUNTERS PARAS · ×4');
+});
+
+test('Ember prefers a Fire-weak enemy over a nearby resistant rock enemy',()=>{
+  const g=createGame('charmander');g.spawnTimer=1e6;g.moves[0].cooldown=0;
+  spawnEnemy(g,'geodude',{x:-2,z:0}).speed=0;
+  spawnEnemy(g,'paras',{x:7,z:0}).speed=0;
+  step(g);assert.ok(g.bullets[0].vx>0);assert.equal(g.bullets[0].type,'FIRE');
 });

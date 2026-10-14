@@ -1,7 +1,9 @@
+export const OPENING_ENEMIES = ['gastly', 'geodude', 'paras'];
+
 export const LEVELS = [
-  { name: 'Verdant Ridges', subtitle: 'The forest is waking up.', enemies: ['gastly', 'geodude', 'pidgey', 'zubat'], boss: 'gengar', ground: '#ffffff', sky: '#b7d9ec', grass: '#7ea44b', leaves: ['#527b47', '#789852', '#7fa15a', '#99b56c'], rocks: ['#89988a', '#a3ab96', '#829455'], duration: 180 },
-  { name: 'Copper Badlands', subtitle: 'Fast claws. Heavy stones.', enemies: ['sandshrew', 'geodude', 'sandslash', 'zubat'], boss: 'gengar', ground: '#e4bd80', sky: '#ebba97', grass: '#be995a', leaves: ['#756644', '#a18d56', '#b69c61', '#c0ab75'], rocks: ['#a67d60', '#c29a72', '#8e764e'], duration: 180 },
-  { name: 'Moonlit Ruins', subtitle: 'The final mind is waiting.', enemies: ['gastly', 'zubat', 'sandslash', 'pidgey'], boss: 'mewtwo', ground: '#b6a1d3', sky: '#50547e', grass: '#777caa', leaves: ['#515875', '#6b7395', '#8185ad', '#9c9ec2'], rocks: ['#7c819b', '#a7a8bc', '#687d8f'], duration: 180 },
+  { name: 'Verdant Ridges', subtitle: 'The forest is waking up.', enemies: ['gastly', 'geodude', 'pidgey', 'zubat', 'oddish', 'paras'], boss: 'gengar', ground: '#ffffff', sky: '#b7d9ec', grass: '#7ea44b', leaves: ['#527b47', '#789852', '#7fa15a', '#99b56c'], rocks: ['#89988a', '#a3ab96', '#829455'], duration: 180 },
+  { name: 'Copper Badlands', subtitle: 'Fast claws. Heavy stones.', enemies: ['sandshrew', 'geodude', 'sandslash', 'zubat', 'paras'], boss: 'gengar', ground: '#e4bd80', sky: '#ebba97', grass: '#be995a', leaves: ['#756644', '#a18d56', '#b69c61', '#c0ab75'], rocks: ['#a67d60', '#c29a72', '#8e764e'], duration: 180 },
+  { name: 'Moonlit Ruins', subtitle: 'The final mind is waiting.', enemies: ['gastly', 'zubat', 'sandslash', 'pidgey', 'oddish'], boss: 'mewtwo', ground: '#b6a1d3', sky: '#50547e', grass: '#777caa', leaves: ['#515875', '#6b7395', '#8185ad', '#9c9ec2'], rocks: ['#7c819b', '#a7a8bc', '#687d8f'], duration: 180 },
 ];
 
 export function levelObjects(stage = 0) {

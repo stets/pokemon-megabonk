@@ -14,6 +14,8 @@ export const MODELS = {
   geodude: { id: '074', height: 1.6, faceYaw: 0 },
   graveler: { id: '075', height: 2.15, faceYaw: 0 },
   golem: { id: '076', height: 2.8, faceYaw: 0 },
+  oddish: { id: '043', height: 1.3, faceYaw: 0 },
+  paras: { id: '046', height: 1.25, faceYaw: 0 },
   zubat: { id: '041', height: 1.5, faceYaw: 0 },
   pidgey: { id: '016', height: 1.4, faceYaw: 0 },
   gengar: { id: '094', height: 2.8, faceYaw: 0 },

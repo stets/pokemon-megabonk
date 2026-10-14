@@ -1,226 +1,232 @@
 {
-  "ruleset": "v14 regional layouts, reserved scenery and region-boss priority with immunity avoidance",
+  "ruleset": "v15 regional layouts, mixed Grass/Bug roster and region-boss priority with immunity avoidance",
   "scenario": "six seeded, full-campaign (900s limit) avoidance runs with counter-first upgrades; directional AI is not a human playtest",
   "results": [
     {
       "starter": "pikachu",
-      "survival": 399,
-      "kills": 810,
-      "level": 19,
-      "wins": 1,
-      "clears": 6,
+      "survival": 609,
+      "kills": 1228,
+      "level": 24,
+      "wins": 2,
+      "clears": 7,
       "runs": [
         {
           "seed": 19,
-          "time": 655,
-          "kills": 2245,
-          "level": 34,
-          "status": "won",
-          "damage": 723718,
-          "stage": 2,
-          "hp": 135,
+          "time": 273,
+          "kills": 720,
+          "level": 15,
+          "status": "dead",
+          "damage": 131239,
+          "stage": 1,
+          "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 295,
-              "hp": 35,
-              "level": 17
-            },
-            {
-              "stage": 1,
-              "time": 475,
-              "hp": 115,
-              "level": 25
+              "time": 180,
+              "hp": 111,
+              "level": 13
             }
           ],
           "moves": [
             {
               "id": "thunder",
-              "level": 6
+              "level": 4
             },
             {
               "id": "water",
-              "level": 6
+              "level": 4
             },
             {
-              "id": "shadow",
-              "level": 6
+              "id": "ember",
+              "level": 3
             },
             {
               "id": "sand",
-              "level": 6
+              "level": 4
             }
           ]
         },
         {
           "seed": 81,
-          "time": 399,
-          "kills": 769,
-          "level": 19,
+          "time": 205,
+          "kills": 318,
+          "level": 11,
           "status": "dead",
-          "damage": 174201,
-          "stage": 1,
-          "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 202,
-              "hp": 59,
-              "level": 14
-            }
-          ],
-          "moves": [
-            {
-              "id": "thunder",
-              "level": 6
-            },
-            {
-              "id": "vine",
-              "level": 5
-            },
-            {
-              "id": "shadow",
-              "level": 4
-            },
-            {
-              "id": "sand",
-              "level": 4
-            }
-          ]
-        },
-        {
-          "seed": 123,
-          "time": 345,
-          "kills": 573,
-          "level": 16,
-          "status": "dead",
-          "damage": 120630,
+          "damage": 39476,
           "stage": 0,
           "hp": 0,
           "clears": [],
           "moves": [
             {
               "id": "thunder",
-              "level": 2
-            },
-            {
-              "id": "vine",
-              "level": 6
-            },
-            {
-              "id": "sand",
-              "level": 5
-            },
-            {
-              "id": "water",
               "level": 3
-            }
-          ]
-        },
-        {
-          "seed": 4721,
-          "time": 348,
-          "kills": 810,
-          "level": 18,
-          "status": "dead",
-          "damage": 153997,
-          "stage": 1,
-          "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 227,
-              "hp": 53,
-              "level": 15
-            }
-          ],
-          "moves": [
-            {
-              "id": "thunder",
-              "level": 4
-            },
-            {
-              "id": "water",
-              "level": 5
-            },
-            {
-              "id": "psychic",
-              "level": 3
-            },
-            {
-              "id": "rock",
-              "level": 6
-            }
-          ]
-        },
-        {
-          "seed": 65191,
-          "time": 673,
-          "kills": 2161,
-          "level": 31,
-          "status": "dead",
-          "damage": 670621,
-          "stage": 2,
-          "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 258,
-              "hp": 15,
-              "level": 16
-            },
-            {
-              "stage": 1,
-              "time": 493,
-              "hp": 89,
-              "level": 25
-            }
-          ],
-          "moves": [
-            {
-              "id": "thunder",
-              "level": 6
-            },
-            {
-              "id": "water",
-              "level": 6
-            },
-            {
-              "id": "shadow",
-              "level": 6
-            },
-            {
-              "id": "psychic",
-              "level": 6
-            }
-          ]
-        },
-        {
-          "seed": 91277,
-          "time": 115,
-          "kills": 185,
-          "level": 7,
-          "status": "dead",
-          "damage": 17674,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "thunder",
-              "level": 2
             },
             {
               "id": "vine",
               "level": 1
             },
             {
-              "id": "shadow",
+              "id": "ember",
               "level": 2
             },
             {
               "id": "bite",
-              "level": 2
+              "level": 5
+            }
+          ]
+        },
+        {
+          "seed": 123,
+          "time": 609,
+          "kills": 1228,
+          "level": 24,
+          "status": "dead",
+          "damage": 298531,
+          "stage": 2,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 217,
+              "hp": 23,
+              "level": 13
+            },
+            {
+              "stage": 1,
+              "time": 430,
+              "hp": 115,
+              "level": 19
+            }
+          ],
+          "moves": [
+            {
+              "id": "thunder",
+              "level": 6
+            },
+            {
+              "id": "vine",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "bite",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 4721,
+          "time": 671,
+          "kills": 2213,
+          "level": 35,
+          "status": "won",
+          "damage": 675157,
+          "stage": 2,
+          "hp": 155,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 202,
+              "hp": 103,
+              "level": 14
+            },
+            {
+              "stage": 1,
+              "time": 447,
+              "hp": 105,
+              "level": 24
+            }
+          ],
+          "moves": [
+            {
+              "id": "thunder",
+              "level": 6
+            },
+            {
+              "id": "water",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "psychic",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 65191,
+          "time": 643,
+          "kills": 1697,
+          "level": 28,
+          "status": "won",
+          "damage": 471423,
+          "stage": 2,
+          "hp": 67,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 212,
+              "hp": 95,
+              "level": 16
+            },
+            {
+              "stage": 1,
+              "time": 451,
+              "hp": 115,
+              "level": 23
+            }
+          ],
+          "moves": [
+            {
+              "id": "thunder",
+              "level": 6
+            },
+            {
+              "id": "water",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "shadow",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 91277,
+          "time": 168,
+          "kills": 430,
+          "level": 11,
+          "status": "dead",
+          "damage": 63093,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "thunder",
+              "level": 3
+            },
+            {
+              "id": "water",
+              "level": 4
+            },
+            {
+              "id": "ember",
+              "level": 3
+            },
+            {
+              "id": "psychic",
+              "level": 1
             }
           ]
         }
@@ -228,19 +234,84 @@
     },
     {
       "starter": "charmander",
-      "survival": 178,
-      "kills": 249,
-      "level": 10,
+      "survival": 199,
+      "kills": 524,
+      "level": 14,
       "wins": 0,
-      "clears": 0,
+      "clears": 2,
       "runs": [
         {
           "seed": 19,
-          "time": 149,
-          "kills": 178,
-          "level": 7,
+          "time": 322,
+          "kills": 820,
+          "level": 18,
           "status": "dead",
-          "damage": 18513,
+          "damage": 163998,
+          "stage": 1,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 215,
+              "hp": 140,
+              "level": 15
+            }
+          ],
+          "moves": [
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "water",
+              "level": 4
+            },
+            {
+              "id": "psychic",
+              "level": 4
+            },
+            {
+              "id": "rock",
+              "level": 4
+            }
+          ]
+        },
+        {
+          "seed": 81,
+          "time": 199,
+          "kills": 359,
+          "level": 13,
+          "status": "dead",
+          "damage": 55400,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "ember",
+              "level": 4
+            },
+            {
+              "id": "vine",
+              "level": 2
+            },
+            {
+              "id": "psychic",
+              "level": 5
+            },
+            {
+              "id": "rock",
+              "level": 2
+            }
+          ]
+        },
+        {
+          "seed": 123,
+          "time": 106,
+          "kills": 124,
+          "level": 5,
+          "status": "dead",
+          "damage": 13212,
           "stage": 0,
           "hp": 0,
           "clears": [],
@@ -259,24 +330,89 @@
             },
             {
               "id": "thunder",
-              "level": 3
+              "level": 1
             }
           ]
         },
         {
-          "seed": 81,
-          "time": 202,
-          "kills": 249,
-          "level": 11,
+          "seed": 4721,
+          "time": 174,
+          "kills": 524,
+          "level": 14,
           "status": "dead",
-          "damage": 34043,
+          "damage": 88605,
           "stage": 0,
           "hp": 0,
           "clears": [],
           "moves": [
             {
               "id": "ember",
+              "level": 2
+            },
+            {
+              "id": "water",
               "level": 3
+            },
+            {
+              "id": "psychic",
+              "level": 6
+            },
+            {
+              "id": "thunder",
+              "level": 3
+            }
+          ]
+        },
+        {
+          "seed": 65191,
+          "time": 399,
+          "kills": 801,
+          "level": 18,
+          "status": "dead",
+          "damage": 172446,
+          "stage": 1,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 219,
+              "hp": 100,
+              "level": 13
+            }
+          ],
+          "moves": [
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "vine",
+              "level": 4
+            },
+            {
+              "id": "psychic",
+              "level": 5
+            },
+            {
+              "id": "thunder",
+              "level": 3
+            }
+          ]
+        },
+        {
+          "seed": 91277,
+          "time": 130,
+          "kills": 228,
+          "level": 7,
+          "status": "dead",
+          "damage": 22982,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "ember",
+              "level": 4
             },
             {
               "id": "vine",
@@ -284,127 +420,11 @@
             },
             {
               "id": "psychic",
-              "level": 3
-            },
-            {
-              "id": "rock",
-              "level": 4
-            }
-          ]
-        },
-        {
-          "seed": 123,
-          "time": 178,
-          "kills": 283,
-          "level": 10,
-          "status": "dead",
-          "damage": 43410,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "ember",
-              "level": 2
-            },
-            {
-              "id": "water",
-              "level": 2
-            },
-            {
-              "id": "psychic",
-              "level": 3
-            },
-            {
-              "id": "rock",
-              "level": 3
-            }
-          ]
-        },
-        {
-          "seed": 4721,
-          "time": 203,
-          "kills": 314,
-          "level": 10,
-          "status": "dead",
-          "damage": 49610,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "ember",
-              "level": 2
-            },
-            {
-              "id": "water",
               "level": 1
             },
             {
-              "id": "psychic",
-              "level": 4
-            },
-            {
-              "id": "rock",
-              "level": 3
-            }
-          ]
-        },
-        {
-          "seed": 65191,
-          "time": 131,
-          "kills": 242,
-          "level": 8,
-          "status": "dead",
-          "damage": 30182,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "ember",
-              "level": 2
-            },
-            {
-              "id": "water",
-              "level": 2
-            },
-            {
-              "id": "psychic",
+              "id": "thunder",
               "level": 1
-            },
-            {
-              "id": "rock",
-              "level": 3
-            }
-          ]
-        },
-        {
-          "seed": 91277,
-          "time": 129,
-          "kills": 210,
-          "level": 7,
-          "status": "dead",
-          "damage": 24070,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "ember",
-              "level": 1
-            },
-            {
-              "id": "water",
-              "level": 2
-            },
-            {
-              "id": "psychic",
-              "level": 1
-            },
-            {
-              "id": "rock",
-              "level": 3
             }
           ]
         }
@@ -412,197 +432,209 @@
     },
     {
       "starter": "bulbasaur",
-      "survival": 281,
-      "kills": 398,
-      "level": 13,
+      "survival": 270,
+      "kills": 388,
+      "level": 12,
       "wins": 0,
-      "clears": 2,
+      "clears": 4,
       "runs": [
         {
           "seed": 19,
-          "time": 281,
-          "kills": 318,
-          "level": 11,
+          "time": 137,
+          "kills": 258,
+          "level": 7,
           "status": "dead",
-          "damage": 49207,
+          "damage": 28586,
           "stage": 0,
           "hp": 0,
           "clears": [],
           "moves": [
             {
               "id": "vine",
-              "level": 3
-            },
-            {
-              "id": "psychic",
               "level": 2
-            },
-            {
-              "id": "rock",
-              "level": 4
             },
             {
               "id": "ember",
-              "level": 2
+              "level": 1
+            },
+            {
+              "id": "psychic",
+              "level": 1
+            },
+            {
+              "id": "thunder",
+              "level": 3
             }
           ]
         },
         {
           "seed": 81,
-          "time": 409,
-          "kills": 582,
-          "level": 14,
+          "time": 241,
+          "kills": 388,
+          "level": 12,
           "status": "dead",
-          "damage": 106708,
-          "stage": 1,
+          "damage": 59469,
+          "stage": 0,
           "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 215,
-              "hp": 73,
-              "level": 9
-            }
-          ],
+          "clears": [],
           "moves": [
             {
               "id": "vine",
               "level": 2
             },
             {
-              "id": "shadow",
-              "level": 3
-            },
-            {
-              "id": "thunder",
-              "level": 6
-            },
-            {
               "id": "ember",
+              "level": 5
+            },
+            {
+              "id": "psychic",
               "level": 3
+            },
+            {
+              "id": "rock",
+              "level": 2
             }
           ]
         },
         {
           "seed": 123,
-          "time": 427,
-          "kills": 738,
-          "level": 19,
+          "time": 270,
+          "kills": 342,
+          "level": 11,
           "status": "dead",
-          "damage": 169152,
-          "stage": 1,
+          "damage": 48785,
+          "stage": 0,
           "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 211,
-              "hp": 113,
-              "level": 12
-            }
-          ],
+          "clears": [],
           "moves": [
             {
               "id": "vine",
               "level": 4
             },
             {
+              "id": "ember",
+              "level": 2
+            },
+            {
               "id": "psychic",
-              "level": 6
+              "level": 3
             },
             {
               "id": "thunder",
-              "level": 6
-            },
-            {
-              "id": "shadow",
-              "level": 3
+              "level": 2
             }
           ]
         },
         {
           "seed": 4721,
-          "time": 224,
-          "kills": 206,
-          "level": 9,
+          "time": 503,
+          "kills": 1039,
+          "level": 19,
           "status": "dead",
-          "damage": 28910,
-          "stage": 0,
+          "damage": 242337,
+          "stage": 2,
           "hp": 0,
-          "clears": [],
+          "clears": [
+            {
+              "stage": 0,
+              "time": 227,
+              "hp": 117,
+              "level": 13
+            },
+            {
+              "stage": 1,
+              "time": 407,
+              "hp": 15,
+              "level": 17
+            }
+          ],
           "moves": [
             {
               "id": "vine",
               "level": 2
             },
             {
+              "id": "ember",
+              "level": 6
+            },
+            {
               "id": "psychic",
-              "level": 3
+              "level": 5
             },
             {
-              "id": "rock",
-              "level": 2
-            },
-            {
-              "id": "swift",
-              "level": 2
+              "id": "thunder",
+              "level": 6
             }
           ]
         },
         {
           "seed": 65191,
-          "time": 259,
-          "kills": 398,
-          "level": 13,
+          "time": 184,
+          "kills": 350,
+          "level": 11,
           "status": "dead",
-          "damage": 67914,
+          "damage": 55201,
           "stage": 0,
           "hp": 0,
           "clears": [],
           "moves": [
             {
               "id": "vine",
-              "level": 4
-            },
-            {
-              "id": "psychic",
               "level": 2
             },
             {
-              "id": "thunder",
-              "level": 3
+              "id": "ember",
+              "level": 1
             },
             {
-              "id": "sand",
-              "level": 4
+              "id": "psychic",
+              "level": 5
+            },
+            {
+              "id": "rock",
+              "level": 3
             }
           ]
         },
         {
           "seed": 91277,
-          "time": 192,
-          "kills": 260,
-          "level": 9,
+          "time": 535,
+          "kills": 1049,
+          "level": 19,
           "status": "dead",
-          "damage": 33307,
-          "stage": 0,
+          "damage": 286748,
+          "stage": 2,
           "hp": 0,
-          "clears": [],
+          "clears": [
+            {
+              "stage": 0,
+              "time": 201,
+              "hp": 133,
+              "level": 10
+            },
+            {
+              "stage": 1,
+              "time": 426,
+              "hp": 113,
+              "level": 17
+            }
+          ],
           "moves": [
             {
               "id": "vine",
+              "level": 5
+            },
+            {
+              "id": "ember",
               "level": 2
             },
             {
               "id": "psychic",
-              "level": 2
+              "level": 6
             },
             {
               "id": "rock",
-              "level": 1
-            },
-            {
-              "id": "thunder",
-              "level": 4
+              "level": 6
             }
           ]
         }
@@ -610,149 +642,69 @@
     },
     {
       "starter": "squirtle",
-      "survival": 276,
-      "kills": 572,
-      "level": 16,
-      "wins": 0,
-      "clears": 4,
+      "survival": 547,
+      "kills": 1672,
+      "level": 26,
+      "wins": 2,
+      "clears": 10,
       "runs": [
         {
           "seed": 19,
-          "time": 203,
-          "kills": 344,
-          "level": 10,
+          "time": 308,
+          "kills": 770,
+          "level": 16,
           "status": "dead",
-          "damage": 47485,
-          "stage": 0,
+          "damage": 142832,
+          "stage": 1,
           "hp": 0,
-          "clears": [],
+          "clears": [
+            {
+              "stage": 0,
+              "time": 199,
+              "hp": 66,
+              "level": 11
+            }
+          ],
           "moves": [
             {
               "id": "water",
-              "level": 1
+              "level": 2
             },
             {
-              "id": "bite",
+              "id": "ember",
               "level": 5
             },
             {
-              "id": "thunder",
-              "level": 1
+              "id": "psychic",
+              "level": 6
             },
             {
-              "id": "shadow",
+              "id": "rock",
               "level": 3
             }
           ]
         },
         {
           "seed": 81,
-          "time": 243,
-          "kills": 471,
-          "level": 14,
+          "time": 547,
+          "kills": 1672,
+          "level": 26,
           "status": "dead",
-          "damage": 86604,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "water",
-              "level": 4
-            },
-            {
-              "id": "psychic",
-              "level": 2
-            },
-            {
-              "id": "rock",
-              "level": 3
-            },
-            {
-              "id": "shadow",
-              "level": 5
-            }
-          ]
-        },
-        {
-          "seed": 123,
-          "time": 276,
-          "kills": 572,
-          "level": 16,
-          "status": "dead",
-          "damage": 114223,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "water",
-              "level": 5
-            },
-            {
-              "id": "psychic",
-              "level": 3
-            },
-            {
-              "id": "thunder",
-              "level": 4
-            },
-            {
-              "id": "rock",
-              "level": 4
-            }
-          ]
-        },
-        {
-          "seed": 4721,
-          "time": 255,
-          "kills": 480,
-          "level": 14,
-          "status": "dead",
-          "damage": 84826,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "water",
-              "level": 5
-            },
-            {
-              "id": "psychic",
-              "level": 4
-            },
-            {
-              "id": "rock",
-              "level": 2
-            },
-            {
-              "id": "swift",
-              "level": 3
-            }
-          ]
-        },
-        {
-          "seed": 65191,
-          "time": 588,
-          "kills": 1297,
-          "level": 23,
-          "status": "dead",
-          "damage": 346179,
+          "damage": 443262,
           "stage": 2,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
               "time": 180,
-              "hp": 116,
-              "level": 12
+              "hp": 76,
+              "level": 13
             },
             {
               "stage": 1,
-              "time": 419,
-              "hp": 72,
-              "level": 19
+              "time": 378,
+              "hp": 130,
+              "level": 20
             }
           ],
           "moves": [
@@ -761,11 +713,53 @@
               "level": 6
             },
             {
+              "id": "ember",
+              "level": 6
+            },
+            {
               "id": "psychic",
-              "level": 5
+              "level": 6
             },
             {
               "id": "thunder",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 123,
+          "time": 690,
+          "kills": 1943,
+          "level": 30,
+          "status": "won",
+          "damage": 597720,
+          "stage": 2,
+          "hp": 114,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 180,
+              "hp": 22,
+              "level": 12
+            },
+            {
+              "stage": 1,
+              "time": 495,
+              "hp": 115,
+              "level": 25
+            }
+          ],
+          "moves": [
+            {
+              "id": "water",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "psychic",
               "level": 6
             },
             {
@@ -775,31 +769,35 @@
           ]
         },
         {
-          "seed": 91277,
-          "time": 900,
-          "kills": 2639,
-          "level": 38,
-          "status": "timeout",
-          "damage": 1071867,
+          "seed": 4721,
+          "time": 634,
+          "kills": 1743,
+          "level": 27,
+          "status": "won",
+          "damage": 493837,
           "stage": 2,
-          "hp": 113,
+          "hp": 58,
           "clears": [
             {
               "stage": 0,
-              "time": 421,
-              "hp": 130,
-              "level": 19
+              "time": 274,
+              "hp": 88,
+              "level": 15
             },
             {
               "stage": 1,
-              "time": 705,
-              "hp": 105,
-              "level": 30
+              "time": 454,
+              "hp": 50,
+              "level": 21
             }
           ],
           "moves": [
             {
               "id": "water",
+              "level": 6
+            },
+            {
+              "id": "ember",
               "level": 6
             },
             {
@@ -809,10 +807,84 @@
             {
               "id": "rock",
               "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 65191,
+          "time": 507,
+          "kills": 1553,
+          "level": 24,
+          "status": "dead",
+          "damage": 410952,
+          "stage": 2,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 190,
+              "hp": 54,
+              "level": 13
             },
             {
-              "id": "vine",
+              "stage": 1,
+              "time": 388,
+              "hp": 78,
+              "level": 20
+            }
+          ],
+          "moves": [
+            {
+              "id": "water",
               "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "thunder",
+              "level": 6
+            },
+            {
+              "id": "sand",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 91277,
+          "time": 257,
+          "kills": 628,
+          "level": 15,
+          "status": "dead",
+          "damage": 104398,
+          "stage": 1,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 180,
+              "hp": 114,
+              "level": 12
+            }
+          ],
+          "moves": [
+            {
+              "id": "water",
+              "level": 3
+            },
+            {
+              "id": "ember",
+              "level": 5
+            },
+            {
+              "id": "psychic",
+              "level": 3
+            },
+            {
+              "id": "thunder",
+              "level": 4
             }
           ]
         }
@@ -820,33 +892,33 @@
     },
     {
       "starter": "eevee",
-      "survival": 452,
-      "kills": 509,
-      "level": 16,
-      "wins": 1,
-      "clears": 4,
+      "survival": 396,
+      "kills": 505,
+      "level": 14,
+      "wins": 0,
+      "clears": 5,
       "runs": [
         {
           "seed": 19,
-          "time": 700,
-          "kills": 1377,
-          "level": 25,
-          "status": "won",
-          "damage": 399595,
+          "time": 806,
+          "kills": 1552,
+          "level": 28,
+          "status": "dead",
+          "damage": 421312,
           "stage": 2,
-          "hp": 33,
+          "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 198,
-              "hp": 76,
-              "level": 10
+              "time": 343,
+              "hp": 62,
+              "level": 15
             },
             {
               "stage": 1,
-              "time": 438,
-              "hp": 100,
-              "level": 17
+              "time": 631,
+              "hp": 21,
+              "level": 24
             }
           ],
           "moves": [
@@ -859,152 +931,36 @@
               "level": 6
             },
             {
-              "id": "water",
+              "id": "vine",
               "level": 6
             },
             {
-              "id": "thunder",
+              "id": "ember",
               "level": 6
             }
           ]
         },
         {
           "seed": 81,
-          "time": 452,
-          "kills": 291,
-          "level": 12,
+          "time": 670,
+          "kills": 1531,
+          "level": 25,
           "status": "dead",
-          "damage": 49937,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "swift",
-              "level": 4
-            },
-            {
-              "id": "bite",
-              "level": 5
-            },
-            {
-              "id": "vine",
-              "level": 3
-            },
-            {
-              "id": "rock",
-              "level": 1
-            }
-          ]
-        },
-        {
-          "seed": 123,
-          "time": 334,
-          "kills": 509,
-          "level": 16,
-          "status": "dead",
-          "damage": 94776,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "swift",
-              "level": 5
-            },
-            {
-              "id": "bite",
-              "level": 6
-            },
-            {
-              "id": "water",
-              "level": 2
-            },
-            {
-              "id": "thunder",
-              "level": 4
-            }
-          ]
-        },
-        {
-          "seed": 4721,
-          "time": 334,
-          "kills": 293,
-          "level": 11,
-          "status": "dead",
-          "damage": 48564,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "swift",
-              "level": 4
-            },
-            {
-              "id": "bite",
-              "level": 5
-            },
-            {
-              "id": "vine",
-              "level": 2
-            },
-            {
-              "id": "thunder",
-              "level": 1
-            }
-          ]
-        },
-        {
-          "seed": 65191,
-          "time": 392,
-          "kills": 345,
-          "level": 14,
-          "status": "dead",
-          "damage": 63445,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "swift",
-              "level": 6
-            },
-            {
-              "id": "bite",
-              "level": 4
-            },
-            {
-              "id": "vine",
-              "level": 2
-            },
-            {
-              "id": "thunder",
-              "level": 3
-            }
-          ]
-        },
-        {
-          "seed": 91277,
-          "time": 532,
-          "kills": 1008,
-          "level": 20,
-          "status": "dead",
-          "damage": 223448,
+          "damage": 392525,
           "stage": 2,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 264,
-              "hp": 40,
-              "level": 13
+              "time": 279,
+              "hp": 64,
+              "level": 15
             },
             {
               "stage": 1,
-              "time": 462,
-              "hp": 16,
-              "level": 19
+              "time": 479,
+              "hp": 80,
+              "level": 21
             }
           ],
           "moves": [
@@ -1014,14 +970,137 @@
             },
             {
               "id": "bite",
-              "level": 5
+              "level": 6
             },
             {
               "id": "water",
               "level": 6
             },
             {
-              "id": "thunder",
+              "id": "ember",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 123,
+          "time": 331,
+          "kills": 346,
+          "level": 13,
+          "status": "dead",
+          "damage": 51617,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "swift",
+              "level": 4
+            },
+            {
+              "id": "bite",
+              "level": 5
+            },
+            {
+              "id": "vine",
+              "level": 3
+            },
+            {
+              "id": "ember",
+              "level": 2
+            }
+          ]
+        },
+        {
+          "seed": 4721,
+          "time": 289,
+          "kills": 334,
+          "level": 11,
+          "status": "dead",
+          "damage": 45042,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "swift",
+              "level": 2
+            },
+            {
+              "id": "bite",
+              "level": 5
+            },
+            {
+              "id": "vine",
+              "level": 3
+            },
+            {
+              "id": "ember",
+              "level": 2
+            }
+          ]
+        },
+        {
+          "seed": 65191,
+          "time": 396,
+          "kills": 505,
+          "level": 14,
+          "status": "dead",
+          "damage": 99957,
+          "stage": 1,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 328,
+              "hp": 6,
+              "level": 13
+            }
+          ],
+          "moves": [
+            {
+              "id": "swift",
+              "level": 3
+            },
+            {
+              "id": "bite",
+              "level": 3
+            },
+            {
+              "id": "vine",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 3
+            }
+          ]
+        },
+        {
+          "seed": 91277,
+          "time": 280,
+          "kills": 334,
+          "level": 11,
+          "status": "dead",
+          "damage": 46812,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "swift",
+              "level": 1
+            },
+            {
+              "id": "bite",
+              "level": 4
+            },
+            {
+              "id": "vine",
+              "level": 3
+            },
+            {
+              "id": "ember",
               "level": 4
             }
           ]
@@ -1030,113 +1109,48 @@
     },
     {
       "starter": "vulpix",
-      "survival": 167,
-      "kills": 347,
-      "level": 10,
+      "survival": 190,
+      "kills": 299,
+      "level": 9,
       "wins": 0,
-      "clears": 2,
+      "clears": 4,
       "runs": [
         {
           "seed": 19,
-          "time": 233,
-          "kills": 347,
-          "level": 10,
+          "time": 105,
+          "kills": 148,
+          "level": 6,
           "status": "dead",
-          "damage": 47717,
-          "stage": 1,
+          "damage": 15247,
+          "stage": 0,
           "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 181,
-              "hp": 13,
-              "level": 9
-            }
-          ],
+          "clears": [],
           "moves": [
             {
               "id": "ember",
-              "level": 2
+              "level": 1
             },
             {
               "id": "vine",
-              "level": 3
+              "level": 2
             },
             {
               "id": "psychic",
               "level": 2
             },
             {
-              "id": "thunder",
-              "level": 3
+              "id": "rock",
+              "level": 1
             }
           ]
         },
         {
           "seed": 81,
-          "time": 167,
-          "kills": 357,
-          "level": 11,
+          "time": 190,
+          "kills": 299,
+          "level": 9,
           "status": "dead",
-          "damage": 48204,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "ember",
-              "level": 5
-            },
-            {
-              "id": "water",
-              "level": 3
-            },
-            {
-              "id": "psychic",
-              "level": 2
-            },
-            {
-              "id": "rock",
-              "level": 1
-            }
-          ]
-        },
-        {
-          "seed": 123,
-          "time": 106,
-          "kills": 166,
-          "level": 6,
-          "status": "dead",
-          "damage": 17175,
-          "stage": 0,
-          "hp": 0,
-          "clears": [],
-          "moves": [
-            {
-              "id": "ember",
-              "level": 1
-            },
-            {
-              "id": "water",
-              "level": 1
-            },
-            {
-              "id": "psychic",
-              "level": 2
-            },
-            {
-              "id": "thunder",
-              "level": 2
-            }
-          ]
-        },
-        {
-          "seed": 4721,
-          "time": 99,
-          "kills": 117,
-          "level": 6,
-          "status": "dead",
-          "damage": 10742,
+          "damage": 38299,
           "stage": 0,
           "hp": 0,
           "clears": [],
@@ -1155,17 +1169,88 @@
             },
             {
               "id": "thunder",
+              "level": 4
+            }
+          ]
+        },
+        {
+          "seed": 123,
+          "time": 566,
+          "kills": 1608,
+          "level": 26,
+          "status": "dead",
+          "damage": 436954,
+          "stage": 2,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 222,
+              "hp": 99,
+              "level": 16
+            },
+            {
+              "stage": 1,
+              "time": 419,
+              "hp": 115,
+              "level": 21
+            }
+          ],
+          "moves": [
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "water",
+              "level": 6
+            },
+            {
+              "id": "psychic",
+              "level": 6
+            },
+            {
+              "id": "rock",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 4721,
+          "time": 105,
+          "kills": 142,
+          "level": 5,
+          "status": "dead",
+          "damage": 14534,
+          "stage": 0,
+          "hp": 0,
+          "clears": [],
+          "moves": [
+            {
+              "id": "ember",
               "level": 1
+            },
+            {
+              "id": "vine",
+              "level": 1
+            },
+            {
+              "id": "thunder",
+              "level": 1
+            },
+            {
+              "id": "sand",
+              "level": 2
             }
           ]
         },
         {
           "seed": 65191,
-          "time": 101,
-          "kills": 143,
-          "level": 5,
+          "time": 178,
+          "kills": 270,
+          "level": 8,
           "status": "dead",
-          "damage": 14651,
+          "damage": 32660,
           "stage": 0,
           "hp": 0,
           "clears": [],
@@ -1175,51 +1260,57 @@
               "level": 2
             },
             {
-              "id": "water",
-              "level": 1
-            },
-            {
-              "id": "psychic",
-              "level": 1
+              "id": "vine",
+              "level": 2
             },
             {
               "id": "rock",
+              "level": 3
+            },
+            {
+              "id": "psychic",
               "level": 1
             }
           ]
         },
         {
           "seed": 91277,
-          "time": 388,
-          "kills": 696,
-          "level": 18,
+          "time": 552,
+          "kills": 1345,
+          "level": 23,
           "status": "dead",
-          "damage": 155240,
-          "stage": 1,
+          "damage": 342520,
+          "stage": 2,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 316,
-              "hp": 79,
-              "level": 16
+              "time": 180,
+              "hp": 115,
+              "level": 13
+            },
+            {
+              "stage": 1,
+              "time": 470,
+              "hp": 75,
+              "level": 21
             }
           ],
           "moves": [
             {
               "id": "ember",
-              "level": 4
+              "level": 6
             },
             {
               "id": "water",
-              "level": 4
+              "level": 6
+            },
+            {
+              "id": "psychic",
+              "level": 5
             },
             {
               "id": "rock",
-              "level": 4
-            },
-            {
-              "id": "sand",
               "level": 6
             }
           ]
@@ -1228,103 +1319,19 @@
     },
     {
       "starter": "psyduck",
-      "survival": 605,
-      "kills": 1344,
+      "survival": 532,
+      "kills": 1431,
       "level": 23,
       "wins": 0,
-      "clears": 8,
+      "clears": 7,
       "runs": [
         {
           "seed": 19,
-          "time": 605,
-          "kills": 1344,
-          "level": 25,
+          "time": 159,
+          "kills": 422,
+          "level": 11,
           "status": "dead",
-          "damage": 398351,
-          "stage": 2,
-          "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 224,
-              "hp": 97,
-              "level": 12
-            },
-            {
-              "stage": 1,
-              "time": 430,
-              "hp": 28,
-              "level": 19
-            }
-          ],
-          "moves": [
-            {
-              "id": "psychic",
-              "level": 6
-            },
-            {
-              "id": "vine",
-              "level": 6
-            },
-            {
-              "id": "thunder",
-              "level": 6
-            },
-            {
-              "id": "rock",
-              "level": 6
-            }
-          ]
-        },
-        {
-          "seed": 81,
-          "time": 464,
-          "kills": 1056,
-          "level": 21,
-          "status": "dead",
-          "damage": 264366,
-          "stage": 2,
-          "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 193,
-              "hp": 91,
-              "level": 12
-            },
-            {
-              "stage": 1,
-              "time": 373,
-              "hp": 60,
-              "level": 19
-            }
-          ],
-          "moves": [
-            {
-              "id": "psychic",
-              "level": 6
-            },
-            {
-              "id": "vine",
-              "level": 4
-            },
-            {
-              "id": "thunder",
-              "level": 6
-            },
-            {
-              "id": "ember",
-              "level": 5
-            }
-          ]
-        },
-        {
-          "seed": 123,
-          "time": 267,
-          "kills": 337,
-          "level": 13,
-          "status": "dead",
-          "damage": 52295,
+          "damage": 58453,
           "stage": 0,
           "hp": 0,
           "clears": [],
@@ -1334,40 +1341,40 @@
               "level": 4
             },
             {
-              "id": "vine",
+              "id": "ember",
               "level": 3
             },
             {
-              "id": "thunder",
-              "level": 4
+              "id": "water",
+              "level": 1
             },
             {
-              "id": "bite",
-              "level": 2
+              "id": "thunder",
+              "level": 3
             }
           ]
         },
         {
-          "seed": 4721,
-          "time": 646,
-          "kills": 1356,
+          "seed": 81,
+          "time": 532,
+          "kills": 1504,
           "level": 23,
           "status": "dead",
-          "damage": 409039,
+          "damage": 394297,
           "stage": 2,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 248,
-              "hp": 109,
-              "level": 13
+              "time": 180,
+              "hp": 145,
+              "level": 12
             },
             {
               "stage": 1,
-              "time": 479,
-              "hp": 108,
-              "level": 19
+              "time": 369,
+              "hp": 121,
+              "level": 18
             }
           ],
           "moves": [
@@ -1380,22 +1387,22 @@
               "level": 5
             },
             {
-              "id": "rock",
+              "id": "ember",
               "level": 6
             },
             {
-              "id": "vine",
+              "id": "rock",
               "level": 6
             }
           ]
         },
         {
-          "seed": 65191,
-          "time": 150,
-          "kills": 322,
-          "level": 9,
+          "seed": 123,
+          "time": 169,
+          "kills": 249,
+          "level": 8,
           "status": "dead",
-          "damage": 41861,
+          "damage": 31468,
           "stage": 0,
           "hp": 0,
           "clears": [],
@@ -1405,40 +1412,40 @@
               "level": 1
             },
             {
-              "id": "water",
-              "level": 3
-            },
-            {
-              "id": "thunder",
+              "id": "vine",
               "level": 2
             },
             {
-              "id": "vine",
-              "level": 3
+              "id": "ember",
+              "level": 1
+            },
+            {
+              "id": "thunder",
+              "level": 4
             }
           ]
         },
         {
-          "seed": 91277,
-          "time": 662,
-          "kills": 1978,
-          "level": 30,
+          "seed": 4721,
+          "time": 558,
+          "kills": 1661,
+          "level": 25,
           "status": "dead",
-          "damage": 612508,
+          "damage": 439790,
           "stage": 2,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 307,
-              "hp": 129,
-              "level": 18
+              "time": 180,
+              "hp": 133,
+              "level": 13
             },
             {
               "stage": 1,
-              "time": 506,
-              "hp": 145,
-              "level": 25
+              "time": 429,
+              "hp": 101,
+              "level": 21
             }
           ],
           "moves": [
@@ -1451,46 +1458,40 @@
               "level": 6
             },
             {
-              "id": "rock",
+              "id": "ember",
               "level": 6
             },
             {
-              "id": "bite",
+              "id": "thunder",
               "level": 6
             }
           ]
-        }
-      ]
-    },
-    {
-      "starter": "sandshrew",
-      "survival": 586,
-      "kills": 1840,
-      "level": 29,
-      "wins": 3,
-      "clears": 11,
-      "runs": [
+        },
         {
-          "seed": 19,
-          "time": 556,
-          "kills": 735,
-          "level": 16,
+          "seed": 65191,
+          "time": 257,
+          "kills": 591,
+          "level": 14,
           "status": "dead",
-          "damage": 162858,
+          "damage": 101272,
           "stage": 1,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 344,
-              "hp": 40,
-              "level": 11
+              "time": 180,
+              "hp": 38,
+              "level": 12
             }
           ],
           "moves": [
             {
-              "id": "sand",
+              "id": "psychic",
               "level": 3
+            },
+            {
+              "id": "ember",
+              "level": 4
             },
             {
               "id": "vine",
@@ -1499,39 +1500,35 @@
             {
               "id": "thunder",
               "level": 4
-            },
-            {
-              "id": "psychic",
-              "level": 6
             }
           ]
         },
         {
-          "seed": 81,
-          "time": 556,
-          "kills": 1899,
-          "level": 30,
-          "status": "won",
-          "damage": 571458,
+          "seed": 91277,
+          "time": 532,
+          "kills": 1431,
+          "level": 24,
+          "status": "dead",
+          "damage": 370252,
           "stage": 2,
-          "hp": 39,
+          "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 182,
-              "hp": 110,
-              "level": 14
+              "time": 180,
+              "hp": 95,
+              "level": 13
             },
             {
               "stage": 1,
-              "time": 376,
-              "hp": 140,
-              "level": 22
+              "time": 438,
+              "hp": 145,
+              "level": 21
             }
           ],
           "moves": [
             {
-              "id": "sand",
+              "id": "psychic",
               "level": 6
             },
             {
@@ -1539,35 +1536,45 @@
               "level": 6
             },
             {
-              "id": "thunder",
+              "id": "ember",
               "level": 6
             },
             {
-              "id": "ember",
+              "id": "thunder",
               "level": 6
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "starter": "sandshrew",
+      "survival": 655,
+      "kills": 2005,
+      "level": 32,
+      "wins": 4,
+      "clears": 12,
+      "runs": [
         {
-          "seed": 123,
-          "time": 582,
-          "kills": 1840,
-          "level": 26,
+          "seed": 19,
+          "time": 621,
+          "kills": 1424,
+          "level": 24,
           "status": "dead",
-          "damage": 526332,
+          "damage": 411061,
           "stage": 2,
           "hp": 0,
           "clears": [
             {
               "stage": 0,
-              "time": 221,
-              "hp": 17,
-              "level": 13
+              "time": 256,
+              "hp": 140,
+              "level": 15
             },
             {
               "stage": 1,
-              "time": 427,
-              "hp": 140,
+              "time": 468,
+              "hp": 85,
               "level": 21
             }
           ],
@@ -1577,123 +1584,39 @@
               "level": 6
             },
             {
+              "id": "ember",
+              "level": 6
+            },
+            {
               "id": "water",
               "level": 6
             },
             {
-              "id": "thunder",
-              "level": 6
-            },
-            {
-              "id": "shadow",
-              "level": 6
-            }
-          ]
-        },
-        {
-          "seed": 4721,
-          "time": 586,
-          "kills": 970,
-          "level": 21,
-          "status": "dead",
-          "damage": 241253,
-          "stage": 2,
-          "hp": 0,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 312,
-              "hp": 78,
-              "level": 12
-            },
-            {
-              "stage": 1,
-              "time": 520,
-              "hp": 105,
-              "level": 19
-            }
-          ],
-          "moves": [
-            {
-              "id": "sand",
-              "level": 6
-            },
-            {
-              "id": "vine",
-              "level": 5
-            },
-            {
               "id": "rock",
-              "level": 4
-            },
-            {
-              "id": "thunder",
               "level": 6
             }
           ]
         },
         {
-          "seed": 65191,
-          "time": 727,
-          "kills": 2494,
-          "level": 35,
+          "seed": 81,
+          "time": 646,
+          "kills": 2005,
+          "level": 32,
           "status": "won",
-          "damage": 986360,
+          "damage": 680373,
           "stage": 2,
-          "hp": 140,
+          "hp": 134,
           "clears": [
             {
               "stage": 0,
-              "time": 367,
+              "time": 216,
               "hp": 140,
-              "level": 20
+              "level": 15
             },
             {
               "stage": 1,
-              "time": 547,
-              "hp": 134,
-              "level": 27
-            }
-          ],
-          "moves": [
-            {
-              "id": "sand",
-              "level": 6
-            },
-            {
-              "id": "water",
-              "level": 6
-            },
-            {
-              "id": "psychic",
-              "level": 6
-            },
-            {
-              "id": "rock",
-              "level": 6
-            }
-          ]
-        },
-        {
-          "seed": 91277,
-          "time": 886,
-          "kills": 1466,
-          "level": 29,
-          "status": "won",
-          "damage": 522576,
-          "stage": 2,
-          "hp": 120,
-          "clears": [
-            {
-              "stage": 0,
-              "time": 442,
-              "hp": 104,
-              "level": 14
-            },
-            {
-              "stage": 1,
-              "time": 687,
-              "hp": 138,
+              "time": 466,
+              "hp": 133,
               "level": 24
             }
           ],
@@ -1703,15 +1626,183 @@
               "level": 6
             },
             {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "vine",
+              "level": 6
+            },
+            {
+              "id": "thunder",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 123,
+          "time": 655,
+          "kills": 1913,
+          "level": 27,
+          "status": "won",
+          "damage": 616319,
+          "stage": 2,
+          "hp": 21,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 210,
+              "hp": 60,
+              "level": 10
+            },
+            {
+              "stage": 1,
+              "time": 443,
+              "hp": 120,
+              "level": 19
+            }
+          ],
+          "moves": [
+            {
+              "id": "sand",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "vine",
+              "level": 6
+            },
+            {
+              "id": "thunder",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 4721,
+          "time": 722,
+          "kills": 2107,
+          "level": 34,
+          "status": "won",
+          "damage": 705334,
+          "stage": 2,
+          "hp": 140,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 285,
+              "hp": 63,
+              "level": 16
+            },
+            {
+              "stage": 1,
+              "time": 492,
+              "hp": 123,
+              "level": 24
+            }
+          ],
+          "moves": [
+            {
+              "id": "sand",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
               "id": "vine",
               "level": 6
             },
             {
               "id": "rock",
               "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 65191,
+          "time": 676,
+          "kills": 2361,
+          "level": 32,
+          "status": "won",
+          "damage": 757101,
+          "stage": 2,
+          "hp": 172,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 270,
+              "hp": 124,
+              "level": 16
             },
             {
-              "id": "shadow",
+              "stage": 1,
+              "time": 481,
+              "hp": 140,
+              "level": 25
+            }
+          ],
+          "moves": [
+            {
+              "id": "sand",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "vine",
+              "level": 6
+            },
+            {
+              "id": "thunder",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "seed": 91277,
+          "time": 653,
+          "kills": 1895,
+          "level": 30,
+          "status": "dead",
+          "damage": 565097,
+          "stage": 2,
+          "hp": 0,
+          "clears": [
+            {
+              "stage": 0,
+              "time": 267,
+              "hp": 98,
+              "level": 17
+            },
+            {
+              "stage": 1,
+              "time": 495,
+              "hp": 137,
+              "level": 25
+            }
+          ],
+          "moves": [
+            {
+              "id": "sand",
+              "level": 6
+            },
+            {
+              "id": "ember",
+              "level": 6
+            },
+            {
+              "id": "water",
+              "level": 6
+            },
+            {
+              "id": "rock",
               "level": 6
             }
           ]

@@ -2,17 +2,17 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { safeCameraPosition } from './camera-motion.js?v=14';
-import { SCENERY } from './obstacles.js?v=14';
-import { buildRegion } from './regions.js?v=14';
-import { LEVELS } from './levels.js?v=14';
-import { RiverWaves } from './water.js?v=14';
-import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=14';
-import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=14';
-import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=14';
-import { seededRandom } from './engine.js?v=14';
-import { paintOverlay } from './overlay.js?v=14';
-import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=14';
+import { safeCameraPosition } from './camera-motion.js?v=15';
+import { SCENERY } from './obstacles.js?v=15';
+import { buildRegion } from './regions.js?v=15';
+import { LEVELS, OPENING_ENEMIES } from './levels.js?v=15';
+import { RiverWaves } from './water.js?v=15';
+import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=15';
+import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=15';
+import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=15';
+import { seededRandom } from './engine.js?v=15';
+import { paintOverlay } from './overlay.js?v=15';
+import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=15';
 
 const TAU = Math.PI * 2;
 const _vector = new THREE.Vector3();
@@ -278,7 +278,7 @@ export class Renderer {
   }
   async warmArena() {
     // Parse large nonessential models sequentially to limit startup memory peaks.
-    for (const kind of ['gastly', 'geodude', 'graveler', 'golem', 'zubat', 'pidgey', 'sandshrew', 'sandslash', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
+    for (const kind of [...OPENING_ENEMIES, 'oddish', 'zubat', 'pidgey', 'sandshrew', 'sandslash', 'graveler', 'golem', 'gengar', 'mewtwo']) await this.requestModel(kind).catch(() => {});
   }
   makeRanger(key) {
     const root = new THREE.Group(), meshes = [], materials = [], limbs = [];

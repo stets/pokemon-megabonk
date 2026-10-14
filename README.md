@@ -15,6 +15,8 @@ Run `python3 ../serve-game.py` from WSL and open `http://localhost:8090`. Static
 - 1/2/3: choose an upgrade. 1–8: select a starter on the title screen.
 - Drag non-interactive title-screen space to orbit the selected Pokémon.
 
+The title waits for the opening encounter models before enabling play. Later model loading keeps the pointer captured; Escape can still pause, and asset readiness preserves that pause.
+
 Camera settings in the main menu and pause screen save automatically. Vertical look defaults to the reverse of the initial prototype’s direction. Both axes can be inverted, and look sensitivity applies to mouse, touch orbit and controllers.
 
 ## Controllers
@@ -31,7 +33,7 @@ Eevee starts with Swift and a weaker close-range Bite so Ghost immunity does not
 
 The playable arena has a 108-unit radius, rolling hills, a forest hamlet, desert workshops and mineral spires, moonlit stone gateways, solid tree/rock/building collisions, and spacing checks for scenery. Pokéball supplies break into blue XP diamonds. Each region has its own building footprints and foliage/stone palettes, shared by rendering, collision and the minimap. Trees sway subtly. The river has flowing pixel texture, a lightweight propagating wave simulation, movement wakes, swimming drag, current drift and buoyancy.
 
-Later waves add Graveler and Golem while retaining Geodude. Capture Ranger minibosses appear at 45 and 105 seconds in each area, telegraph capture zones and throw capture balls. Being caught briefly slows movement. Boss arrivals use a dedicated banner and sound cue so other notices cannot overwrite Mewtwo’s entrance.
+Wild Oddish and Paras diversify the enemy roster: Fire deals 2× damage to Oddish and 4× to Paras, while Water and Ground retain their valuable rock matchups. Each region contains a Fire-weak enemy; opening forest waves mix Paras, Geodude and Gastly. Later waves add Graveler and Golem while retaining Geodude. Capture Ranger minibosses appear at 45 and 105 seconds in each area, telegraph capture zones and throw capture balls. Being caught briefly slows movement. Boss arrivals use a dedicated banner and sound cue so other notices cannot overwrite Mewtwo’s entrance.
 
 ## Technical structure
 
@@ -43,13 +45,13 @@ Later waves add Graveler and Golem while retaining Geodude. Capture Ranger minib
 - `dist/audio.js`: original synthesized music, progressively increasing from 118 to 178 BPM across the campaign.
 - `dist/actor-lifecycle.js`: owned animation and GPU-resource cleanup.
 
-The game catches runtime errors and exposes `window.pokebonkCrash`. `window.pokebonk` offers a small developer hook for inspecting the simulation and camera.
+The game catches runtime errors and exposes `window.pokebonkCrash`. `window.pokebonk` offers a small developer hook for inspecting the simulation, camera and model readiness.
 
 ## Verification and balance
 
 Run `node --test tests/*.test.mjs` with Node 24. Tests cover combat, type multipliers, immunity, crit caps, supplies, movement/collision, camera settings, hill clearance, controller input, river physics, stage progression, miniboss capture and boss alerts. Browser rendering and interaction checks are separate.
 
-Run `node scripts/balance.mjs` to compare starters across six identical first-area seeds. It writes `balance-results.json` with survival, kills and levels. Use `node scripts/balance.mjs --campaign` to run all three areas with a 15-minute limit per seed. It records area clears, final builds, deaths, victories and explicit timeouts in `campaign-balance-results.json`; `campaign-balance-baseline.json` preserves the published v12 targeting comparison. These are comparisons using a directional avoidance bot, not proof that every human strategy or late-game build is balanced. The v12/v13 targeting comparison is preserved in `campaign-targeting-results.json`. Across the same 48 starter/seed combinations before region-layout changes, intermediate area clears increased from 29 to 31 with boss priority, while complete victories decreased from four to two. Focusing a boss trades some horde damage for progression; the results still show starter/build differences that need human playtesting.
+Run `node scripts/balance.mjs` to compare starters across six identical first-area seeds. It writes `balance-results.json` with survival, kills and levels. Use `node scripts/balance.mjs --campaign` to run all three areas with a 15-minute limit per seed. It records area clears, final builds, deaths, victories and explicit timeouts in `campaign-balance-results.json`; `campaign-balance-baseline.json` preserves the published v12 targeting comparison. `campaign-regions-results.json` preserves the v14 roster comparison before Oddish and Paras were added. These are comparisons using a directional avoidance bot, not proof that every human strategy or late-game build is balanced. The v12/v13 targeting comparison is preserved in `campaign-targeting-results.json`. Across the same 48 starter/seed combinations before region-layout changes, intermediate area clears increased from 29 to 31 with boss priority, while complete victories decreased from four to two. Focusing a boss trades some horde damage for progression; the results still show starter/build differences that need human playtesting.
 
 ## Publish
 
