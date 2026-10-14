@@ -1,4 +1,4 @@
-import { ALL_BUILDINGS, avoidBuildings } from './regions.js?v=15';
+import { ALL_BUILDINGS, avoidBuildings } from './regions.js?v=16';
 
 function placements() {
   let state = 91277;

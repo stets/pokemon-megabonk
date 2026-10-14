@@ -1809,5 +1809,6 @@
         }
       ]
     }
-  ]
+  ],
+  "damageMetric": "Rolled hit damage including overkill; captured before per-move field reports"
 }

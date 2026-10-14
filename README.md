@@ -29,15 +29,18 @@ The game uses the browser Gamepad API. Keyboard, mouse and touch remain supporte
 
 The modern 18-type chart supplies weaknesses, resistances and immunities, including dual-type multipliers. Electric cannot hurt Rock/Ground Geodude; Water and Grass deal 4× damage to it. Auto-targeting gives the region boss priority when a move can damage it, then prefers vulnerable enemies; upgrade choices favor counters that improve coverage, with extra priority for overcoming immunities. Abilities such as Levitate and same-type attack bonuses are not modeled.
 
-Eevee starts with Swift and a weaker close-range Bite so Ghost immunity does not strand its opening build. Crits start at 12% chance and 1.7× damage. Scope Lens increases chance to a 50% cap; Razor Claw increases the multiplier to a 3× cap. Crit, resistance and immunity feedback are distinct. Pause statistics track actual projectile misses separately from immune hits; there is no random accuracy penalty.
+Eevee starts with Swift and a weaker close-range Bite so Ghost immunity does not strand its opening build. Crits start at 12% chance and 1.7× damage. Scope Lens increases chance to a 50% cap; Razor Claw increases the multiplier to a 3× cap. Crit, resistance and immunity feedback are distinct. Pause and result field reports show actual enemy HP removed by each move, hits, crits, misses and immunity. Overkill does not inflate damage totals. Historical balance JSON files label the earlier rolled-damage metric; new balance runs record actual HP removed. Pause statistics track actual projectile misses separately from immune hits; there is no random accuracy penalty.
 
 The playable arena has a 108-unit radius, rolling hills, a forest hamlet, desert workshops and mineral spires, moonlit stone gateways, solid tree/rock/building collisions, and spacing checks for scenery. Pokéball supplies break into blue XP diamonds. Each region has its own building footprints and foliage/stone palettes, shared by rendering, collision and the minimap. Trees sway subtly. The river has flowing pixel texture, a lightweight propagating wave simulation, movement wakes, swimming drag, current drift and buoyancy.
 
 Wild Oddish and Paras diversify the enemy roster: Fire deals 2× damage to Oddish and 4× to Paras, while Water and Ground retain their valuable rock matchups. Each region contains a Fire-weak enemy; opening forest waves mix Paras, Geodude and Gastly. Later waves add Graveler and Golem while retaining Geodude. Capture Ranger minibosses appear at 45 and 105 seconds in each area, telegraph capture zones and throw capture balls. Being caught briefly slows movement. Boss arrivals use a dedicated banner and sound cue so other notices cannot overwrite Mewtwo’s entrance.
 
+Personal bests rank victories above failures and area progress above survival time. Among victories, faster campaign clears win; failed runs at the same progress still reward survival time. Legacy time/kill records remain readable.
+
 ## Technical structure
 
 - `dist/engine.js`: deterministic movement, combat, upgrades, stages, enemies and drops.
+- `dist/run-report.js`: per-move combat records, readable field reports, and progress-aware personal bests.
 - `dist/type-chart.js`, `levels.js`, `regions.js`, `obstacles.js`, `terrain.js`: shared rules, maps and collision data.
 - `dist/renderer.js`: Three.js, textured animated GLBs, toon shading, outlines, pixel terrain, procedural buildings, fire sprites, bird wings, and scenery animation.
 - `dist/camera-motion.js`, `settings.js`, `controller.js`: camera collision/easing, saved preferences and normalized controller input.

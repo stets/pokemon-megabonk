@@ -1665,5 +1665,6 @@
       ]
     }
   ],
-  "ruleset": "Published v12, effectiveness-first targeting"
+  "ruleset": "Published v12, effectiveness-first targeting",
+  "damageMetric": "Rolled hit damage including overkill; captured before per-move field reports"
 }

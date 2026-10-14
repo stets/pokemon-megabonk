@@ -1,11 +1,12 @@
-import { LEVELS, OPENING_ENEMIES, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=15';
-import { easeCamera, turnCamera } from './camera-motion.js?v=15';
-import { loadSettings, saveSettings } from './settings.js?v=15';
-import { buildingsForStage } from './regions.js?v=15';
-import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=15';
-import { ControllerInput } from './controller.js?v=15';
-import { GameAudio } from './audio.js?v=15';
-import { EVOLUTIONS } from './models.js?v=15';
+import { runRecord, normalizeBest, isBetterRun, moveReport } from './run-report.js?v=16';
+import { LEVELS, OPENING_ENEMIES, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=16';
+import { easeCamera, turnCamera } from './camera-motion.js?v=16';
+import { loadSettings, saveSettings } from './settings.js?v=16';
+import { buildingsForStage } from './regions.js?v=16';
+import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=16';
+import { ControllerInput } from './controller.js?v=16';
+import { GameAudio } from './audio.js?v=16';
+import { EVOLUTIONS } from './models.js?v=16';
 
 const $ = id => document.getElementById(id);
 const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
@@ -16,8 +17,9 @@ const controller = new ControllerInput(); let controllerActive = false, controll
 let previousTime = 0, held = new Set(), pulse = {}, dragging = false, dragX = 0, dragY = 0, stick = { x: 0, y: 0 };
 let best = null;
 let assetsPaused = false, lastBossAlert = -1;
-try { best = JSON.parse(localStorage.getItem('pokebonk-best')); } catch { /* Browser storage can be unavailable. */ }
-if (best) $('best').textContent = `BEST RUN ${timeLabel(best.time)} / ${best.kills} BONKS`;
+try { best = normalizeBest(JSON.parse(localStorage.getItem('pokebonk-best'))); } catch { /* Browser storage can be unavailable. */ }
+if (best) displayBest();
+function displayBest() { $('best').textContent = `${best.won ? 'BEST CLEAR' : `BEST RUN · ${best.areasCleared} AREAS`} ${timeLabel(best.time)} / ${best.kills} BONKS`; }
 
 function updateSound() { $('sound').textContent = sound.enabled ? 'SOUND ON' : 'SOUND OFF'; $('sound').setAttribute('aria-label', sound.enabled ? 'Mute sound' : 'Enable sound'); }
 $('sound').addEventListener('click', () => { sound.toggle(); updateSound(); sound.effect('select'); });
@@ -109,7 +111,7 @@ function menu() {
 }
 function pause() {
   if (lobby) return;
-  if (['playing', 'loading'].includes(game.status)) { game.status = 'paused'; $('combat-stats').textContent = `CRIT ${Math.round(game.stats.critChance * 100)}% · ${game.stats.critMultiplier.toFixed(2)}× DAMAGE · ${game.combat.criticalHits} CRITS · ${game.combat.shotsMissed} MISSED SHOTS · ${game.combat.immuneHits} IMMUNE HITS`; clearInput(); $('paused').hidden = false; $('resume').focus(); }
+  if (['playing', 'loading'].includes(game.status)) { game.status = 'paused'; $('combat-stats').textContent = `CRIT ${Math.round(game.stats.critChance * 100)}% · ${game.stats.critMultiplier.toFixed(2)}× DAMAGE · ${game.combat.criticalHits} CRITS · ${game.combat.shotsMissed} MISSED SHOTS · ${game.combat.immuneHits} IMMUNE HITS`; clearInput(); renderMoveReport('pause-report'); $('paused').hidden = false; $('paused').querySelector('.modal-panel').scrollTop = 0; $('resume').focus({ preventScroll: true }); }
   else if (game.status === 'paused') { game.status = 'playing'; $('paused').hidden = true; clearInput(); captureMouse(); }
 }
 $('start').addEventListener('click', startRun); $('again').addEventListener('click', startRun); $('change').addEventListener('click', menu);
@@ -117,6 +119,18 @@ $('pause').addEventListener('click', pause); $('resume').addEventListener('click
 
 function moveIcon(id) {
   return ['thunder','ember','vine','water','rock','shadow'].includes(id) ? `<img class="move-icon" alt="" src="assets/icons/${id}.png">` : MOVES[id].icon;
+}
+
+function renderMoveReport(id) {
+  const rows = moveReport(game);
+  $(id).replaceChildren();
+  const title = document.createElement('h3'); title.textContent = 'FIELD REPORT · MOVE DAMAGE'; $(id).append(title);
+  for (const row of rows) {
+    const data = MOVES[row.id], item = document.createElement('div'); item.className = 'report-row'; item.style.setProperty('--accent', data.color);
+    const details = row.hits ? `${row.hits} hits · ${row.crits} crits · ${Math.round(row.share)}% of damage` : 'No damaging hits yet';
+    item.innerHTML = `<span class="report-icon" aria-hidden="true">${moveIcon(row.id)}</span><div><div class="report-heading"><strong>${data.name} <small>LV ${row.level}</small></strong><b>${row.damage.toLocaleString()}</b></div><span class="report-details">${details}${row.missed ? ` · ${row.missed} missed` : ''}${row.immune ? ` · ${row.immune} immune` : ''}</span><div class="report-track"><span style="width:${row.share}%"></span></div></div>`;
+    $(id).append(item);
+  }
 }
 
 function buildMoves() {
@@ -150,13 +164,15 @@ function showResult() {
   resultRecorded = true; clearInput(); const win = game.status === 'won';
   $('result-eyebrow').textContent = win ? 'THE CLEARING IS YOURS. FOR NOW.' : 'THE WILD ALWAYS HAS ONE MORE';
   $('result-title').textContent = win ? 'UNBONKABLE.' : 'BONKED.';
-  $('result-description').textContent = win ? 'Three minutes survived. Mewtwo defeated. One very good Pokémon.' : 'A good run. A questionable survival strategy.';
+  $('result-description').textContent = win ? `All ${LEVELS.length} areas cleared in ${timeLabel(game.time)}. Mewtwo defeated.` : 'A good run. A questionable survival strategy.';
   $('result-time').textContent = timeLabel(game.time); $('result-kills').textContent = String(game.kills); $('result-level').textContent = String(game.level);
-  $('result').hidden = false; $('again').focus();
-  if (!best || game.time > best.time || (game.time === best.time && game.kills > best.kills)) {
-    best = { time: game.time, kills: game.kills };
+  renderMoveReport('result-report');
+  $('result').hidden = false; $('result').querySelector('.modal-panel').scrollTop = 0; $('again').focus({ preventScroll: true });
+  const record = runRecord(game);
+  if (isBetterRun(record, best)) {
+    best = record;
     try { localStorage.setItem('pokebonk-best', JSON.stringify(best)); } catch { /* Session-only best if storage is disabled. */ }
-    $('best').textContent = `BEST RUN ${timeLabel(best.time)} / ${best.kills} BONKS`;
+    displayBest();
   }
   sound.effect(win ? 'win' : 'lose');
 }
@@ -307,7 +323,7 @@ function handleController(pad, dt) {
   if (game.status === 'stage-clear') { if (pad.pressed.has(0)) enterNextArea(); return; }
   if (game.status === 'paused') {
     if (pad.pressed.has(1)) { pause(); return; }
-    const elements = [...$('paused').querySelectorAll('input, button')];
+    const elements = [...$('paused').querySelectorAll('input, button, summary, [data-controller-scroll]')].filter(element => element.getClientRects().length > 0);
     let index = elements.indexOf(document.activeElement); if (index < 0) index = 0;
     if (pad.navY) elements[(index + pad.navY + elements.length) % elements.length].focus();
     const focused = document.activeElement;
@@ -387,7 +403,7 @@ function frame(time) {
 }
 buildStarters(); game.status = 'lobby';
 try {
-  const { Renderer } = await import('./renderer.js?v=15');
+  const { Renderer } = await import('./renderer.js?v=16');
   renderer = new Renderer($('world'), $('effects'), updateAssetStatus);
   updateAssetStatus();
   for (const kind of ['pikachu', ...OPENING_ENEMIES]) renderer.prepare(kind).catch(() => {});

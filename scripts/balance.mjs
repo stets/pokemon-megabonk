@@ -22,10 +22,10 @@ for(const starter of Object.keys(STARTERS)) {
       const length=Math.hypot(x,z)||1;
       step(g,{x:x/length,z:z/length,dash:g.enemies.some(e=>distance(e,g.player)<2.5)&&g.player.dashCooldown===0},1/30);
     }
-    runs.push({seed,time:Math.round(g.time),kills:g.kills,level:g.level,status:g.status==='playing'&&g.time>=duration-.1?'timeout':g.status,damage:Math.round(g.combat.damageDealt),stage:g.stage,hp:Math.round(g.player.hp),clears,moves:g.moves.map(m=>({id:m.id,level:m.level}))});
+    runs.push({seed,time:Math.round(g.time),kills:g.kills,level:g.level,status:g.status==='playing'&&g.time>=duration-.1?'timeout':g.status,damage:Math.round(g.combat.damageDealt),stage:g.stage,hp:Math.round(g.player.hp),clears,moves:g.moves.map(m=>({id:m.id,level:m.level,damage:Math.round(g.combat.byMove?.[m.id]?.damageDealt??0),hits:g.combat.byMove?.[m.id]?.hits??0,misses:g.combat.byMove?.[m.id]?.shotsMissed??0}))});
   }
   const median=key=>runs.map(r=>r[key]).sort((a,b)=>a-b)[Math.floor(runs.length/2)];
   const row={starter,survival:median('time'),kills:median('kills'),level:median('level'),wins:runs.filter(r=>r.status==='won').length,clears:runs.reduce((sum,r)=>sum+r.clears.length,0),runs}; results.push(row);
   console.log(`${starter.padEnd(10)} survival=${row.survival}s kills=${row.kills} level=${row.level} wins=${row.wins}/${seeds.length} clears=${row.clears}`);
 }
-writeFileSync(new URL(campaign?'../campaign-balance-results.json':'../balance-results.json',import.meta.url),JSON.stringify({ruleset:'v15 regional layouts, mixed Grass/Bug roster and region-boss priority with immunity avoidance',scenario:`six seeded, ${campaign?'full-campaign (900s limit)':'first-area (180s limit)'} avoidance runs with counter-first upgrades; directional AI is not a human playtest`,results},null,2)+'\n');
+writeFileSync(new URL(campaign?'../campaign-balance-results.json':'../balance-results.json',import.meta.url),JSON.stringify({damageMetric:'Actual enemy HP removed; excludes overkill',ruleset:'v15 regional layouts, mixed Grass/Bug roster and region-boss priority with immunity avoidance',scenario:`six seeded, ${campaign?'full-campaign (900s limit)':'first-area (180s limit)'} avoidance runs with counter-first upgrades; directional AI is not a human playtest`,results},null,2)+'\n');

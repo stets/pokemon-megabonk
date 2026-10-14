@@ -1680,5 +1680,6 @@
       ]
     }
   ],
-  "ruleset": "Region-boss priority with immunity avoidance"
+  "ruleset": "Region-boss priority with immunity avoidance",
+  "damageMetric": "Rolled hit damage including overkill; captured before per-move field reports"
 }

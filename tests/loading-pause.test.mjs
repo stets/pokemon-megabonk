@@ -6,8 +6,8 @@ const pauseSource=app.slice(app.indexOf('function pause()'),app.indexOf("$('star
 const readySource=app.match(/if \(!missing.length\) \{[^\n]+/)[0];
 function context(status='loading'){
   const nodes=new Map();const g=createGame();g.status=status;
-  const ctx={game:g,lobby:false,assetsPaused:true,missing:[],clearInput(){},captureMouse(){},
-    $(id){if(!nodes.has(id))nodes.set(id,{hidden:true,textContent:'',focus(){}});return nodes.get(id)}};
+  const ctx={game:g,lobby:false,assetsPaused:true,missing:[],clearInput(){},captureMouse(){},renderMoveReport(){},
+    $(id){if(!nodes.has(id))nodes.set(id,{hidden:true,textContent:'',focus(){},querySelector(){return {scrollTop:0}}});return nodes.get(id)}};
   vm.createContext(ctx);vm.runInContext(pauseSource,ctx);return ctx;
 }
 test('Escape/pause can pause a loading encounter and model readiness preserves that choice',()=>{

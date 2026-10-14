@@ -1,9 +1,10 @@
-import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=15';
-export { ARENA_RADIUS } from './terrain.js?v=15';
-import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=15';
-import { moveWithCollisions } from './obstacles.js?v=15';
-import { LEVELS, levelObjects, OPENING_ENEMIES } from './levels.js?v=15';
-export { LEVELS, OPENING_ENEMIES } from './levels.js?v=15';
+import { moveRecord } from './run-report.js?v=16';
+import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=16';
+export { ARENA_RADIUS } from './terrain.js?v=16';
+import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=16';
+import { moveWithCollisions } from './obstacles.js?v=16';
+import { LEVELS, levelObjects, OPENING_ENEMIES } from './levels.js?v=16';
+export { LEVELS, OPENING_ENEMIES } from './levels.js?v=16';
 
 export const STARTERS = {
   pikachu: { name: 'Pikachu', evolved: 'Raichu', type: 'ELECTRIC', color: '#ffda4a', move: 'thunder', speed: 8.2, hp: 90, description: 'Chain lightning. Fast feet. Absolute chaos.' },
@@ -38,7 +39,7 @@ export function createGame(starter = 'pikachu', seed = Date.now()) {
   return { status: 'playing', starter, rng, time: 0, stage: 0, stageTime: 0, duration: LEVELS[0].duration, wave: 1, kills: 0, gold: 0, xp: 0, xpNext: 7, level: 1,
     player: { types: [...SPECIES_TYPES[starter]], x: 0, z: 0, y: 0, vy: 0, slideX: 0, slideZ: 0, sliding: false, capturedTime: 0, angle: 0, hp: config.hp, maxHp: config.hp, speed: config.speed, invulnerable: 0, dash: 0, dashCooldown: 0, dashX: 0, dashZ: -1 },
     stats: { damage: 1, haste: 1, magnet: 3.8, armor: 0, projectiles: 1, critChance: .12, critMultiplier: 1.7 },
-    combat: { shotsFired: 0, shotsHit: 0, shotsMissed: 0, immuneHits: 0, criticalHits: 0, damageDealt: 0 },
+    combat: { shotsFired: 0, shotsHit: 0, shotsMissed: 0, immuneHits: 0, criticalHits: 0, damageDealt: 0, byMove: {} },
     moves: [{ id: config.move, level: 1, cooldown: .3 }, ...(starter === 'eevee' ? [{ id: 'bite', level: 1, cooldown: .6 }] : [])], enemies: [], bullets: [], drops: [], fx: [], numbers: [], nextId: 1,
     spawnTimer: .2, bossStages: [], finalBossDead: false, evolved: false, choices: [], upgradeSource: 'level',
     ...levelObjects(0),
@@ -58,7 +59,7 @@ export function spawnEnemy(g, kind, position, elite = false) {
     elite, boss: ['gengar', 'mewtwo', 'ranger'].includes(type), hit: 0, attackTimer: 2.5, angle: angle + Math.PI, phase: g.rng() * 8 };
   g.enemies.push(e); return e;
 }
-function hit(g, e, damage, color, attackType) {
+function hit(g, e, damage, color, attackType, moveId) {
   if (e.hp <= 0) return;
   if (e.supply) {
     e.hp -= damage;
@@ -74,11 +75,15 @@ function hit(g, e, damage, color, attackType) {
   const amount = Math.round(damage * multiplier * (critical ? g.stats.critMultiplier : 1));
   const feedbackColor = multiplier === 0 ? '#b2bac6' : multiplier > 1 ? '#ffe05b' : multiplier < 1 ? '#b1c2d5' : critical ? '#ffe05b' : color;
   g.numbers.push({ x: e.x, z: e.z, text: multiplier === 0 ? 'IMMUNE' : String(amount), color: feedbackColor, life: .8, maxLife: .8, critical, effectiveness: multiplier, label: multiplier === 0 ? '' : [critical ? 'CRIT!' : '', matchupLabel(multiplier)].filter(Boolean).join(' · ') });
-  if (multiplier === 0) { g.combat.immuneHits++; return; }
-  g.combat.damageDealt += amount; if (critical) g.combat.criticalHits++;
-  e.hp -= amount; e.hit = .15;
+  const record = moveRecord(g, moveId);
+  if (multiplier === 0) { g.combat.immuneHits++; if (record) record.immuneHits++; return; }
+  const actualDamage = Math.min(e.hp, amount);
+  g.combat.damageDealt += actualDamage; if (critical) g.combat.criticalHits++;
+  if (record) { record.hits++; record.damageDealt += actualDamage; if (critical) record.criticalHits++; }
+  e.hp = Math.max(0, e.hp - amount); e.hit = .15;
   if (attackType === 'FIRE') g.fx.push({ kind: 'fire', x: e.x, z: e.z, life: .3, maxLife: .3, color: '#ffae55' });
   if (e.hp <= 0) {
+    if (record) record.kills++;
     g.kills++; g.gold += e.boss ? 35 : e.elite ? 3 : 1;
     const value = e.boss ? 24 : e.elite ? 4 : 1;
     g.drops.push({ x: e.x, z: e.z, kind: 'xp', value, phase: g.rng() * 6 });
@@ -101,14 +106,15 @@ function attack(g, move) {
       || bMatch - aMatch || distance(a, p) - distance(b, p);
   });
   if (!targets.length) return false;
+  const record = moveRecord(g, move.id); record.casts++;
   const damage = data.damage * g.stats.damage * (1 + (move.level - 1) * .32) * (g.evolved ? 1.25 : 1);
   if (['vine', 'psychic', 'sand', 'bite'].includes(move.id)) {
-    for (const e of targets) hit(g, e, damage, data.color, data.type);
+    for (const e of targets) hit(g, e, damage, data.color, data.type, move.id);
     g.fx.push({ kind: 'ring', x: p.x, z: p.z, radius: range, color: data.color, life: .35, maxLife: .35 });
   } else if (move.id === 'thunder') {
     let from = p;
     for (const e of targets.slice(0, Math.min(6, move.level + g.stats.projectiles))) {
-      hit(g, e, damage, data.color, data.type);
+      hit(g, e, damage, data.color, data.type, move.id);
       g.fx.push({ kind: 'line', x: from.x, z: from.z, tx: e.x, tz: e.z, color: data.color, life: .22, maxLife: .22 }); from = e;
     }
   } else {
@@ -116,9 +122,9 @@ function attack(g, move) {
     for (let n = 0; n < Math.min(5, g.stats.projectiles); n++) {
       const a = angle + (n - (Math.min(5, g.stats.projectiles) - 1) / 2) * .18;
       const speed = data.speed ?? 21;
-      g.combat.shotsFired++;
+      g.combat.shotsFired++; record.shotsFired++;
       g.bullets.push({ x: p.x, z: p.z, vx: Math.sin(a) * speed, vz: Math.cos(a) * speed, life: range / speed, radius: move.id === 'rock' ? .48 : .36,
-        type: data.type, color: data.color, damage, pierce: ['ember', 'swift'].includes(move.id) ? 2 + Math.floor(move.level / 3) : 1, hitIds: new Set(), enemy: false });
+        moveId: move.id, type: data.type, color: data.color, damage, pierce: ['ember', 'swift'].includes(move.id) ? 2 + Math.floor(move.level / 3) : 1, hitIds: new Set(), enemy: false });
     }
   }
   event(g, 'attack'); return true;
@@ -350,13 +356,13 @@ export function step(g, input = {}, dt = 1 / 60) {
       for (const e of [...g.enemies, ...g.pokeballs]) {
         if (e.hp <= 0 || b.hitIds.has(e.id)) continue;
         if (segmentDistance(e.x, e.z, oldX, oldZ, b.x, b.z) < e.radius + b.radius) {
-          hit(g, e, b.damage, b.color, b.type); if (!b.hitIds.size) g.combat.shotsHit++; b.hitIds.add(e.id); b.pierce--;
+          hit(g, e, b.damage, b.color, b.type, b.moveId); if (!b.hitIds.size) { g.combat.shotsHit++; const record = moveRecord(g, b.moveId); if (record) record.shotsHit++; } b.hitIds.add(e.id); b.pierce--;
           if (b.pierce <= 0) { b.life = 0; break; }
         }
       }
     }
   }
-  for (const b of g.bullets) if (b.life <= 0 && !b.enemy && !b.hitIds.size) g.combat.shotsMissed++;
+  for (const b of g.bullets) if (b.life <= 0 && !b.enemy && !b.hitIds.size) { g.combat.shotsMissed++; const record = moveRecord(g, b.moveId); if (record) record.shotsMissed++; }
   g.bullets = g.bullets.filter(b => b.life > 0); g.enemies = g.enemies.filter(e => e.hp > 0);
   for (const drop of g.drops) {
     const dist = distance(drop, p);
