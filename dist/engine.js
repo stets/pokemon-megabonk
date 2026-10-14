@@ -36,7 +36,8 @@ export function createGame(starter = 'pikachu', seed = Date.now()) {
   const rng = seededRandom(seed);
   return { status: 'playing', starter, rng, time: 0, stage: 0, stageTime: 0, duration: LEVELS[0].duration, wave: 1, kills: 0, gold: 0, xp: 0, xpNext: 7, level: 1,
     player: { types: [...SPECIES_TYPES[starter]], x: 0, z: 0, y: 0, vy: 0, slideX: 0, slideZ: 0, sliding: false, angle: 0, hp: config.hp, maxHp: config.hp, speed: config.speed, invulnerable: 0, dash: 0, dashCooldown: 0, dashX: 0, dashZ: -1 },
-    stats: { damage: 1, haste: 1, magnet: 3.8, armor: 0, projectiles: 1 },
+    stats: { damage: 1, haste: 1, magnet: 3.8, armor: 0, projectiles: 1, critChance: .12, critMultiplier: 1.7 },
+    combat: { shotsFired: 0, shotsHit: 0, shotsMissed: 0, immuneHits: 0, criticalHits: 0, damageDealt: 0 },
     moves: [{ id: config.move, level: 1, cooldown: .3 }], enemies: [], bullets: [], drops: [], fx: [], numbers: [], nextId: 1,
     spawnTimer: .2, bossStages: [], finalBossDead: false, evolved: false, choices: [], upgradeSource: 'level',
     ...levelObjects(0),
@@ -58,11 +59,12 @@ export function spawnEnemy(g, kind, position, elite = false) {
 function hit(g, e, damage, color, attackType) {
   if (e.hp <= 0) return;
   const multiplier = effectiveness(attackType, e.types);
-  const critical = multiplier > 0 && g.rng() < .12;
-  const amount = Math.round(damage * multiplier * (critical ? 1.7 : 1));
+  const critical = multiplier > 0 && g.rng() < g.stats.critChance;
+  const amount = Math.round(damage * multiplier * (critical ? g.stats.critMultiplier : 1));
   const feedbackColor = multiplier === 0 ? '#b2bac6' : multiplier > 1 ? '#ffe05b' : multiplier < 1 ? '#b1c2d5' : critical ? '#ffe05b' : color;
-  g.numbers.push({ x: e.x, z: e.z, text: multiplier === 0 ? 'IMMUNE' : String(amount), color: feedbackColor, life: .8, maxLife: .8, critical, effectiveness: multiplier, label: multiplier === 0 ? '' : matchupLabel(multiplier) });
-  if (multiplier === 0) return;
+  g.numbers.push({ x: e.x, z: e.z, text: multiplier === 0 ? 'IMMUNE' : String(amount), color: feedbackColor, life: .8, maxLife: .8, critical, effectiveness: multiplier, label: multiplier === 0 ? '' : [critical ? 'CRIT!' : '', matchupLabel(multiplier)].filter(Boolean).join(' · ') });
+  if (multiplier === 0) { g.combat.immuneHits++; return; }
+  g.combat.damageDealt += amount; if (critical) g.combat.criticalHits++;
   e.hp -= amount; e.hit = .15;
   if (e.hp <= 0) {
     g.kills++; g.gold += e.boss ? 35 : e.elite ? 3 : 1;
@@ -94,6 +96,7 @@ function attack(g, move) {
     for (let n = 0; n < Math.min(5, g.stats.projectiles); n++) {
       const a = angle + (n - (Math.min(5, g.stats.projectiles) - 1) / 2) * .18;
       const speed = data.speed ?? 21;
+      g.combat.shotsFired++;
       g.bullets.push({ x: p.x, z: p.z, vx: Math.sin(a) * speed, vz: Math.cos(a) * speed, life: range / speed, radius: move.id === 'rock' ? .48 : .36,
         type: data.type, color: data.color, damage, pierce: ['ember', 'swift'].includes(move.id) ? 2 + Math.floor(move.level / 3) : 1, hitIds: new Set(), enemy: false });
     }
@@ -131,6 +134,8 @@ export function makeChoices(g) {
     { id: 'hp', name: 'Sitrus Berry', label: 'HELD ITEM', description: '+20 max HP. Heal 35 HP immediately.', color: '#a4df87', icon: '♥' },
     { id: 'armor', name: 'Rocky Helmet', label: 'HELD ITEM', description: 'Take 15% less contact damage.', color: '#b6c3d9', icon: '⬡' },
   ];
+  if (g.stats.critChance < .5) pool.push({ id: 'crit-chance', name: 'Scope Lens', label: 'CRITICAL CHANCE', description: '+6 percentage points of crit chance, up to 50%.', color: '#f1d179', icon: '◎' });
+  if (g.stats.critMultiplier < 3) pool.push({ id: 'crit-damage', name: 'Razor Claw', label: 'CRITICAL DAMAGE', description: '+0.25× critical damage, up to 3×.', color: '#ecaa8e', icon: '✧' });
   if (g.stats.projectiles < 5) pool.push({ id: 'projectile', name: 'Choice Specs', label: 'HELD ITEM', description: 'Fire one additional projectile. Lightning chains further.', color: '#ffbcdf', icon: '◈' });
   for (const [id, data] of Object.entries(MOVES)) {
     const existing = g.moves.find(m => m.id === id);
@@ -162,6 +167,8 @@ export function applyUpgrade(g, id) {
     const moveId = id.slice(5), existing = g.moves.find(m => m.id === moveId);
     if (existing) existing.level++; else g.moves.push({ id: moveId, level: 1, cooldown: .25 });
   } else if (id === 'damage') g.stats.damage += .2;
+  else if (id === 'crit-chance') g.stats.critChance = Math.min(.5, g.stats.critChance + .06);
+  else if (id === 'crit-damage') g.stats.critMultiplier = Math.min(3, g.stats.critMultiplier + .25);
   else if (id === 'haste') g.stats.haste *= 1.15;
   else if (id === 'speed') g.player.speed *= 1.12;
   else if (id === 'magnet') g.stats.magnet *= 1.4;
@@ -292,12 +299,13 @@ export function step(g, input = {}, dt = 1 / 60) {
       for (const e of g.enemies) {
         if (e.hp <= 0 || b.hitIds.has(e.id)) continue;
         if (segmentDistance(e.x, e.z, oldX, oldZ, b.x, b.z) < e.radius + b.radius) {
-          hit(g, e, b.damage, b.color, b.type); b.hitIds.add(e.id); b.pierce--;
+          hit(g, e, b.damage, b.color, b.type); if (!b.hitIds.size) g.combat.shotsHit++; b.hitIds.add(e.id); b.pierce--;
           if (b.pierce <= 0) { b.life = 0; break; }
         }
       }
     }
   }
+  for (const b of g.bullets) if (b.life <= 0 && !b.enemy && !b.hitIds.size) g.combat.shotsMissed++;
   g.bullets = g.bullets.filter(b => b.life > 0); g.enemies = g.enemies.filter(e => e.hp > 0);
   for (const drop of g.drops) {
     const dist = distance(drop, p);
