@@ -1,10 +1,9 @@
-import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=13';
-export { ARENA_RADIUS } from './terrain.js?v=13';
-import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=13';
-import { avoidBuildings } from './regions.js?v=13';
-import { moveWithCollisions } from './obstacles.js?v=13';
-import { LEVELS, levelObjects } from './levels.js?v=13';
-export { LEVELS } from './levels.js?v=13';
+import { ARENA_RADIUS, groundSlope, waterDepth } from './terrain.js?v=14';
+export { ARENA_RADIUS } from './terrain.js?v=14';
+import { SPECIES_TYPES, effectiveness, matchupLabel } from './type-chart.js?v=14';
+import { moveWithCollisions } from './obstacles.js?v=14';
+import { LEVELS, levelObjects } from './levels.js?v=14';
+export { LEVELS } from './levels.js?v=14';
 
 export const STARTERS = {
   pikachu: { name: 'Pikachu', evolved: 'Raichu', type: 'ELECTRIC', color: '#ffda4a', move: 'thunder', speed: 8.2, hp: 90, description: 'Chain lightning. Fast feet. Absolute chaos.' },
@@ -250,7 +249,7 @@ export function step(g, input = {}, dt = 1 / 60) {
     }
   }
   if (magnitude && !p.sliding) p.angle = Math.atan2(mx, mz);
-  moveWithCollisions(p, previousPosition, .5);
+  moveWithCollisions(p, previousPosition, .5, g.stage);
   const worldDistance = Math.hypot(p.x, p.z);
   if (worldDistance > ARENA_RADIUS) { p.x *= ARENA_RADIUS / worldDistance; p.z *= ARENA_RADIUS / worldDistance; }
   p.vy -= 24 * dt; p.y = Math.max(0, p.y + p.vy * dt); if (p.y === 0) p.vy = 0;
@@ -309,7 +308,7 @@ export function step(g, input = {}, dt = 1 / 60) {
     e.angle = Math.atan2(dx, dz);
     const lunge = ['zubat', 'sandslash'].includes(e.kind) && Math.sin(g.time * 1.8 + e.phase) > .85 ? 2.1 : 1;
     if (dist > e.radius + .35) { e.x += dx / dist * e.speed * lunge * dt; e.z += dz / dist * e.speed * lunge * dt; }
-    moveWithCollisions(e, oldPosition, e.radius);
+    moveWithCollisions(e, oldPosition, e.radius, g.stage);
     if (dist < e.radius + .55) damagePlayer(g, e.boss ? 22 : e.elite ? 15 : 10);
     if (!e.boss && ['geodude', 'graveler', 'golem'].includes(e.kind) && g.stageTime > 35 && dist < 18) {
       e.attackTimer -= dt;

@@ -2,17 +2,17 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { safeCameraPosition } from './camera-motion.js?v=13';
-import { SCENERY } from './obstacles.js?v=13';
-import { buildRegion } from './regions.js?v=13';
-import { LEVELS } from './levels.js?v=13';
-import { RiverWaves } from './water.js?v=13';
-import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=13';
-import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=13';
-import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=13';
-import { seededRandom } from './engine.js?v=13';
-import { paintOverlay } from './overlay.js?v=13';
-import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=13';
+import { safeCameraPosition } from './camera-motion.js?v=14';
+import { SCENERY } from './obstacles.js?v=14';
+import { buildRegion } from './regions.js?v=14';
+import { LEVELS } from './levels.js?v=14';
+import { RiverWaves } from './water.js?v=14';
+import { groundHeight, WATER_LEVEL, riverCenter, waterDepth } from './terrain.js?v=14';
+import { buildChest, buildShrine, buildPortal, buildPokeball } from './world-props.js?v=14';
+import { MODELS, EVOLUTIONS, modelURL } from './models.js?v=14';
+import { seededRandom } from './engine.js?v=14';
+import { paintOverlay } from './overlay.js?v=14';
+import { releaseActor, playAnimation, finishAnimationFade } from './actor-lifecycle.js?v=14';
 
 const TAU = Math.PI * 2;
 const _vector = new THREE.Vector3();
@@ -153,13 +153,13 @@ export class Renderer {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.93, .028, 6, 80), this.material('#e3dba9')); ring.rotation.x = Math.PI / 2; ring.position.y = .13;
     this.podium.add(base, top, ring); this.podium.position.set(3.2, .15, 0); this.scene.add(this.podium);
     this.chests = []; this.shrines = []; this.supplies = [];
-    this.region = buildRegion(THREE, color => this.material(color), groundHeight); this.scene.add(this.region);
+    this.region = buildRegion(THREE, color => this.material(color), groundHeight); this.scene.add(this.region); this.regionStage = 0;
     this.portal = buildPortal(THREE); this.scene.add(this.portal.root);
   }
   groundTexture(rng) {
     const canvas = document.createElement('canvas'); canvas.width = canvas.height = 64; const c = canvas.getContext('2d'); c.imageSmoothingEnabled = false;
-    c.fillStyle = '#e0e7ba'; c.fillRect(0, 0, 64, 64);
-    const palette = ['#b5c594', '#c7d5a4', '#d4dfb0', '#f0edc6'];
+    c.fillStyle = '#e4e4e4'; c.fillRect(0, 0, 64, 64);
+    const palette = ['#b8b8b8', '#cccccc', '#dddddd', '#eeeeee'];
     for (let i = 0; i < 850; i++) {
       const x = Math.floor(rng() * 64), y = Math.floor(rng() * 64);
       c.fillStyle = palette[Math.floor(rng() * palette.length)]; c.fillRect(x, y, 1 + Math.floor(rng() * 3), 1 + Math.floor(rng() * 2));
@@ -185,7 +185,7 @@ export class Renderer {
       const x = (rng() - .5) * 228, z = (rng() - .5) * 228;
       if (Math.abs(z - Math.sin(x * .1) * 3) < 2.4 || Math.abs(x - 33 - Math.sin(z * .09) * 2) < 4.2) continue;
       _dummy.position.set(x, groundHeight(x, z), z); _dummy.rotation.y = rng() * TAU; _dummy.scale.setScalar(.5 + rng() * 1.1); _dummy.updateMatrix(); grass.setMatrixAt(count, _dummy.matrix);
-      grass.setColorAt(count, new THREE.Color().setHSL(.2 + rng() * .035, .35, .55 + rng() * .12)); count++;
+      grass.setColorAt(count, new THREE.Color().setScalar(.7 + rng() * .2)); count++;
     }
     grass.count = count; grass.instanceMatrix.needsUpdate = true; grass.receiveShadow = true; this.grass = grass; this.scene.add(grass);
   }
@@ -439,9 +439,35 @@ export class Renderer {
   render(g, time, lobby = false) {
     this.resize();
     if (this.currentStage !== g.stage) {
+      if (this.regionStage !== g.stage) {
+        this.scene.remove(this.region);
+        const shared = new Set(this.materialCache.values()), materials = new Set(), textures = new Set();
+        this.region.traverse(node => {
+          if (!node.isMesh) return; node.geometry.dispose();
+          for (const mat of Array.isArray(node.material) ? node.material : [node.material]) if (!shared.has(mat)) materials.add(mat);
+        });
+        for (const mat of materials) { if (mat.map) textures.add(mat.map); mat.dispose(); }
+        for (const texture of textures) texture.dispose();
+        this.region = buildRegion(THREE, color => this.material(color), groundHeight, g.stage);
+        this.scene.add(this.region); this.regionStage = g.stage;
+      }
       this.currentStage = g.stage; const theme = LEVELS[g.stage];
       this.scene.background.set(theme.sky); this.scene.fog.color.set(theme.sky);
-      this.terrain.material.color.set(theme.ground); this.grass.material.color.set(theme.grass);
+      this.terrain.material.color.set('#ffffff'); this.grass.material.color.set(theme.grass);
+      const lush = new THREE.Color(g.stage === 0 ? '#96b869' : theme.ground);
+      const trail = new THREE.Color(['#c1b68b', '#caa571', '#9b91b2'][g.stage]);
+      const positions = this.terrain.geometry.attributes.position, colors = this.terrain.geometry.attributes.color;
+      const tintRandom = seededRandom(65191);
+      for (let i = 0; i < positions.count; i++) {
+        const x = positions.getX(i), z = positions.getZ(i);
+        const path = Math.max(0, 1 - Math.abs(z - Math.sin(x * .1) * 3) / 2.7);
+        const col = lush.clone().lerp(trail, path * path).multiplyScalar(.95 + tintRandom() * .09);
+        colors.setXYZ(i, col.r, col.g, col.b);
+      }
+      colors.needsUpdate = true;
+      this.sun.color.set(g.stage === 2 ? '#aebee8' : '#fff0cc'); this.sun.intensity = g.stage === 2 ? 1.35 : 2.2;
+      ['#527b47', '#789852', '#7fa15a', '#99b56c'].forEach((color, i) => this.material(color).color.set(theme.leaves[i]));
+      ['#89988a', '#a3ab96', '#829455'].forEach((color, i) => this.material(color).color.set(theme.rocks[i]));
       for (const prop of [...this.chests, ...this.shrines, ...this.supplies]) {
         this.scene.remove(prop.root);
         const shared = new Set(this.materialCache.values());

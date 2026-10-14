@@ -1,4 +1,4 @@
-import { BUILDINGS, avoidBuildings } from './regions.js?v=13';
+import { ALL_BUILDINGS, avoidBuildings } from './regions.js?v=14';
 
 function placements() {
   let state = 91277;
@@ -9,7 +9,7 @@ function placements() {
       const a = random() * Math.PI * 2, r = 17 + random() * 90, x = Math.cos(a) * r, z = Math.sin(a) * r, size = .65 + random() * 1.2;
       const clearance = kind === 'tree' ? size * 1.8 : size;
       if (Math.abs(z - Math.sin(x * .1) * 3) < 3 || Math.abs(x - 33 - Math.sin(z * .09) * 2) < 5) continue;
-      if (BUILDINGS.some(b => Math.abs(x - b.x) < b.w / 2 + clearance + 3 && Math.abs(z - b.z) < b.d / 2 + clearance + 3)) continue;
+      if (ALL_BUILDINGS.some(b => Math.abs(x - b.x) < b.w / 2 + clearance + 3 && Math.abs(z - b.z) < b.d / 2 + clearance + 3)) continue;
       if (all.some(o => Math.hypot(x - o.x, z - o.z) < clearance + o.clearance + 1)) continue;
       const object = { kind, x, z, size, clearance, radius: kind === 'tree' ? .35 * size : .9 * size, height: kind === 'tree' ? 3.3 * size : 1.15 * size };
       output.push(object); all.push(object);
@@ -28,7 +28,7 @@ function* nearby(x, z) {
   for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) yield* (grid.get(`${cx + dx},${cz + dz}`) ?? []);
 }
 
-export function moveWithCollisions(actor, from, radius = .5) {
+export function moveWithCollisions(actor, from, radius = .5, stage = 0) {
   const dx = actor.x - from.x, dz = actor.z - from.z, steps = Math.max(1, Math.ceil(Math.hypot(dx, dz) / .2));
   actor.x = from.x; actor.z = from.z;
   for (let i = 0; i < steps; i++) {
@@ -40,6 +40,6 @@ export function moveWithCollisions(actor, from, radius = .5) {
       actor.x = obstacle.x + (distance ? ox / distance : 1) * limit;
       actor.z = obstacle.z + (distance ? oz / distance : 0) * limit;
     }
-    avoidBuildings(actor, radius);
+    avoidBuildings(actor, radius, stage);
   }
 }

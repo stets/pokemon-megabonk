@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#17221b">
   <meta name="description" content="Pick a Pokémon. Enter the wild. Clear three areas through a storm of automatic attacks, candy, upgrades, and alpha encounters.">
   <title>Pokébonk — Wild Run</title>
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
   <script type="importmap">{"imports": {"three": "./assets/vendor/three/build/three.module.js", "three/addons/": "./assets/vendor/three/examples/jsm/"}}</script>
-  <script type="module" src="app.js?v=13"></script>
+  <script type="module" src="app.js?v=14"></script>
 </head>
 <body>
   <canvas id="world" tabindex="-1" aria-label="3D Pokémon arena"></canvas>
@@ -46,7 +46,7 @@
       <div class="run-stats"><div><span class="micro">BONKS</span><strong id="kills">0</strong></div><div><span class="micro">COINS</span><strong id="gold">0</strong></div><button class="icon-button" id="pause" aria-label="Pause game">Ⅱ</button></div></div>
     <div id="notice" role="status" aria-live="polite"></div>
     <div id="chest-prompt" hidden></div>
-    <div class="hud-bottom"><div class="moves-block"><span class="micro">YOUR MOVESET</span><div id="moves"></div></div><div class="dash-block"><span class="micro">QUICK ATTACK <span class="key">SHIFT</span></span><div class="dash-track"><span id="dash-fill"></span></div><span id="dash-label">READY</span></div><div class="map-block"><canvas id="minimap" width="192" height="192" aria-label="Arena minimap"></canvas><span class="micro">VIRIDIAN CLEARING</span></div></div>
+    <div class="hud-bottom"><div class="moves-block"><span class="micro">YOUR MOVESET</span><div id="moves"></div></div><div class="dash-block"><span class="micro">QUICK ATTACK <span class="key">SHIFT</span></span><div class="dash-track"><span id="dash-fill"></span></div><span id="dash-label">READY</span></div><div class="map-block"><canvas id="minimap" width="192" height="192" aria-label="Arena minimap"></canvas><span id="map-region" class="micro">VERDANT RIDGES</span></div></div>
     <div class="xp-bottom"><span>XP</span><div class="xp-track"><span id="xp-fill"></span></div><span id="xp-number">0 / 7 XP</span></div>
     <div id="touch-controls"><div id="joystick" aria-label="Movement joystick"><span></span></div><div class="touch-buttons"><button id="touch-jump">JUMP</button><button id="touch-dash">DASH</button><button id="touch-interact">OPEN</button></div></div>
   </section>

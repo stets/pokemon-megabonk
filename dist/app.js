@@ -1,11 +1,11 @@
-import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=13';
-import { easeCamera, turnCamera } from './camera-motion.js?v=13';
-import { loadSettings, saveSettings } from './settings.js?v=13';
-import { BUILDINGS } from './regions.js?v=13';
-import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=13';
-import { ControllerInput } from './controller.js?v=13';
-import { GameAudio } from './audio.js?v=13';
-import { EVOLUTIONS } from './models.js?v=13';
+import { LEVELS, advanceStage, ARENA_RADIUS, createGame, step, applyUpgrade, STARTERS, MOVES, distance } from './engine.js?v=14';
+import { easeCamera, turnCamera } from './camera-motion.js?v=14';
+import { loadSettings, saveSettings } from './settings.js?v=14';
+import { buildingsForStage } from './regions.js?v=14';
+import { groundHeight, riverCenter, ARENA_RADIUS as MAP_RADIUS } from './terrain.js?v=14';
+import { ControllerInput } from './controller.js?v=14';
+import { GameAudio } from './audio.js?v=14';
+import { EVOLUTIONS } from './models.js?v=14';
 
 const $ = id => document.getElementById(id);
 const digits = { pikachu: '025', charmander: '004', bulbasaur: '001', squirtle: '007', eevee: '133', vulpix: '037', psyduck: '054', sandshrew: '027' };
@@ -164,7 +164,7 @@ let mapStage = -1; const mapBase = document.createElement('canvas'); mapBase.wid
 function paintMap() {
   const map = $('minimap'), ctx = map.getContext('2d'), p = game.player, center = map.width / 2, scale = (center - 10) / ARENA_RADIUS;
   if (mapStage !== game.stage) {
-    mapStage = game.stage; const base = mapBase.getContext('2d'); base.clearRect(0, 0, 192, 192); base.save(); base.beginPath(); base.arc(center, center, center - 10, 0, Math.PI * 2); base.clip();
+    mapStage = game.stage; $('map-region').textContent = LEVELS[game.stage].name.toUpperCase(); const base = mapBase.getContext('2d'); base.clearRect(0, 0, 192, 192); base.save(); base.beginPath(); base.arc(center, center, center - 10, 0, Math.PI * 2); base.clip();
     for (let x = -ARENA_RADIUS; x < ARENA_RADIUS; x += 5) for (let z = -ARENA_RADIUS; z < ARENA_RADIUS; z += 5) {
       const hue = [95, 38, 255][game.stage], light = 24 + Math.min(9, Math.max(0, groundHeight(x, z))) * 2.3;
       base.fillStyle = `hsl(${hue} 25% ${light}%)`; base.fillRect(center + x * scale, center + z * scale, 5 * scale + 1, 5 * scale + 1);
@@ -173,7 +173,7 @@ function paintMap() {
     for (let x = -ARENA_RADIUS; x <= ARENA_RADIUS; x += 4) { const px = center + x * scale, py = center + Math.sin(x * .1) * 3 * scale; if (x === -ARENA_RADIUS) base.moveTo(px, py); else base.lineTo(px, py); } base.stroke();
     base.strokeStyle = '#72c5e0'; base.lineWidth = 6; base.beginPath();
     for (let z = -ARENA_RADIUS; z <= ARENA_RADIUS; z += 4) { const px = center + riverCenter(z) * scale, py = center + z * scale; if (z === -ARENA_RADIUS) base.moveTo(px, py); else base.lineTo(px, py); } base.stroke();
-    for (const b of BUILDINGS) { base.fillStyle = b.roof; base.fillRect(center + (b.x - b.w / 2) * scale, center + (b.z - b.d / 2) * scale, b.w * scale, b.d * scale); }
+    for (const b of buildingsForStage(game.stage)) { base.fillStyle = b.roof; base.fillRect(center + (b.x - b.w / 2) * scale, center + (b.z - b.d / 2) * scale, b.w * scale, b.d * scale); }
     base.restore();
   }
   ctx.clearRect(0, 0, map.width, map.height); ctx.drawImage(mapBase, 0, 0); ctx.strokeStyle = '#d4ddc922'; ctx.lineWidth = 1;
@@ -387,7 +387,7 @@ function frame(time) {
 }
 buildStarters(); game.status = 'lobby';
 try {
-  const { Renderer } = await import('./renderer.js?v=13');
+  const { Renderer } = await import('./renderer.js?v=14');
   renderer = new Renderer($('world'), $('effects'), updateAssetStatus);
   updateAssetStatus();
   for (const kind of ['pikachu', 'gastly', 'geodude']) renderer.prepare(kind).catch(() => {});
